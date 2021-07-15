@@ -9,29 +9,46 @@ from Palestra import app
 @app.route('/')
 @app.route('/home')
 def home():
-    """Renders the home page."""
     return render_template(
-        'index.html',
-        title='Home Page',
-        year=datetime.now().year,
+        'home.html',
+        title='Home Page'
     )
 
-@app.route('/contact')
-def contact():
+@app.route('/calendario')
+def calendario():
+    return render_template(
+        'calendario.html',
+        title='calendario'
+    )
+
+@app.route('/corsi')
+def corsi():
+    return render_template(
+        'corsi.html',
+        title='corsi'
+    )
+
+@app.route('/istruttori')
+def istruttori():
+    return render_template(
+        'istruttori.html',
+        title='istruttori'
+    )
+
+@app.route('/login')
+def login():
+    return render_template(
+        'login.html',
+        title='login'
+    )
+
+@app.route('/profilo')
+def profilo():
     """Renders the contact page."""
     return render_template(
-        'contact.html',
-        title='Contact',
-        year=datetime.now().year,
-        message='Your contact page.'
+        'profilo.html',
+        title='profilo'
     )
 
-@app.route('/about')
-def about():
-    """Renders the about page."""
-    return render_template(
-        'about.html',
-        title='About',
-        year=datetime.now().year,
-        message='Your application description page.'
-    )
+
+
