@@ -51,4 +51,12 @@ def profilo():
     )
 
 
+@app.route('/creazionePalestra')
+def creazionePalestra():
+    """pagina della creazione della palestra"""
+    return render_template(
+        'creazionePalestra.html',
+        title='Crea La Palestra'
+    )
+
 
