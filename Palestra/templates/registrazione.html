@@ -2,6 +2,21 @@
 
 {% block content %}
 
-<h1>Sono la pagina di registrazione</h1>
+<h2>{{ title }}</h2>
+
+<form action="{{ url_for('registrazione') }}" method="POST">
+    <div class="form-group">
+        {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.codice_fiscale) }}
+        {{ wtf.form_field(form.nome) }}
+        {{ wtf.form_field(form.cognome) }}
+     ## {{ wtf.form_field(form.data) }} 
+        {{ wtf.form_field(form.telefono) }}
+        {{ wtf.form_field(form.email) }}
+        {{ wtf.form_field(form.password) }}
+     ## {{ wtf.form_field(form.chk_password) }}
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
 
 {% endblock %}

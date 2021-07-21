@@ -3,13 +3,26 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - My Flask Application</title>
+    <title>{{ title }} - Acti - Gym, benvenuto</title>
     <link rel="stylesheet" type="text/css" href="/static/content/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="/static/content/site.css" />
     <script src="/static/scripts/modernizr-2.6.2.js"></script>
 </head>
 
+
+
 <body>
+
+    <!-- per gli alert in tutte le pagine-->
+    <div class="container">
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -18,11 +31,13 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
+                <a href="/" class="navbar-brand">Acti - Gym</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('home') }}">Home</a></li>
                     <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('registrazione') }}">Registrazione</a></li>
                     <li><a href="{{ url_for('profilo') }}">Profilo</a></li>
                     <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
                     <li><a href="{{ url_for('corsi') }}">Corsi</a></li>
@@ -34,8 +49,10 @@
 
     <div class="container body-content">
         {% block content %}{% endblock %}
-        
-        
+        <hr />
+        <footer>
+            <p>&copy; {{ year }} - Acti - Gym managment</p>
+        </footer>
     </div>
 
     <script src="/static/scripts/jquery-1.10.2.js"></script>
