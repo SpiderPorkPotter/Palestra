@@ -65,7 +65,7 @@ def home():
     )
 
 
-@app.route('/login')
+@app.route('/login', methods = ['GET','POST'])
 def login():
     form = LoginForm()
 
@@ -74,7 +74,7 @@ def login():
         if utente:
             if check_password_hash(Persone.passwd, form.password.data):
                 login_user(utente)
-                return redirect(url_for('home'))
+                return redirect(url_for('profilo'))
 
         return '<h1> email o password sbagliati'
         
@@ -82,7 +82,7 @@ def login():
     return render_template('login.html', form = form)
 
 
-@app.route('/registrazione')
+@app.route('/registrazione', methods = ['GET','POST'])
 def registrazione():
     form = RegistrazioneForm()
 
