@@ -7,7 +7,7 @@ from flask import render_template, url_for, redirect, request, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, IntegerField
+from wtforms import StringField, PasswordField, IntegerField, FormField
 from wtforms.fields.html5 import DateTimeLocalField
 from wtforms.validators import InputRequired, Email, Length
 from sqlalchemy import create_engine
@@ -38,18 +38,18 @@ def user_loader(id):
 
 
 class LoginForm(FlaskForm):
-    email = StringField('email', validators = [InputRequired(), Email(message = 'Email non valida'), Length(max = 50)])
-    password = PasswordField('password', validators = [InputRequired(), Length(min = 8, max = 50)])
+    email = StringField('Email', validators = [InputRequired(), Email(message = 'Email non valida'), Length(max = 50)])
+    password = PasswordField('Password', validators = [InputRequired(), Length(min = 8, max = 50)])
 
 class RegistrazioneForm(FlaskForm):
-    codice_fiscale = StringField('codice fiscale', validators = [InputRequired(), Length(min = 11, max = 16)])
-    nome = StringField('nome', validators = [InputRequired(), Length(min = 3, max = 50)])
-    cognome = StringField('nome', validators = [InputRequired(), Length(min = 3, max = 50)])
+    codice_fiscale = StringField('Codice fiscale', validators = [InputRequired(), Length(min = 11, max = 16)])
+    nome = StringField('Nome', validators = [InputRequired(), Length(min = 3, max = 50)])
+    cognome = StringField('Cognome', validators = [InputRequired(), Length(min = 3, max = 50)])
     #probabilmente questo campo è inutile
     #data = DateTimeLocalField('seleziona la data di oggi', format = '%d/%m/y', validators = InputRequired())
-    telefono = IntegerField('inserisci il tuo numero di telefono', validators = [InputRequired(), Length(min = 9, max = 11)])
-    email = StringField('email', validators = [InputRequired(), Email(message = 'Email non valida'), Length(max = 50)])
-    password = PasswordField('password', validators = [InputRequired(), Length(min = 8, max = 50)])
+    telefono = IntegerField('Telefono', validators = [InputRequired(), Length(min = 9, max = 11)])
+    email = StringField('Email', validators = [InputRequired(), Email(message = 'Email non valida'), Length(max = 50)])
+    password = PasswordField('Password', validators = [InputRequired(), Length(min = 8, max = 50)])
     #mettiamo il conferma password? Boh, intanto c'è, poi al massimo lo eliminiamo
     #chk_password = PasswordField('conferma password', validators = [InputRequired(), Length(min = 8, max = 50)])
 
