@@ -22,13 +22,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 app.config['SECRET_KEY'] = '!9m@S-dThyIlW[pHQbN^'
 
-#db = SQLAlchemy(app)
+db = SQLAlchemy(app)
 
 engine = create_engine(DB_URI)
-#db.init_app(app)
+db.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 #da verificare se id è corretto
 @login_manager.user_loader
@@ -72,12 +73,13 @@ def login():
         utente = Persone.query.filter_by(email = form.email.data).first()
         if utente:
             if check_password_hash(Persone.passwd, form.password.data):
+                login_user(utente)
                 return redirect(url_for('home'))
 
         return '<h1> email o password sbagliati'
         
 
-    return render_template('login.html', title='login', form = form)
+    return render_template('login.html', form = form)
 
 
 @app.route('/registrazione')
