@@ -108,6 +108,21 @@ class OccupazionePosti(Base):
     palestre = relationship('Palestre')
 
 
+"""
+Errore che viene fuori quando dopo aver inserito i dati sia nella pagina di registrazione,
+sia nella pagina di login si preme submit quasi sicuramente a causa della relazione 
+palestre_persone. Non so il perché penso sia dovuto al fatto 
+che è una relazione molti a molti e quella terza tabella là
+non viene riconosciuta. Ho provato a trasformarla in una class come quelle sopra,
+ma non è cambiato nulla. 
+Forse invece che farla molti a molti, la facciamo 1 a molti, così magari ci togliamo il pensiero.
+È un'idea.
+
+sqlalchemy.exc.InvalidRequestError: When initializing mapper mapped class Persone->persone, 
+expression 'palestre_persone' failed to locate a name ("name 'palestre_persone' is not defined"). 
+If this is a class name, consider adding this relationship() 
+to the <class 'Palestra.models.Persone'> class after both dependent classes have been defined.
+"""
 t_palestre_persone = Table(
     'palestre_persone', metadata,
     Column('id_palestra', ForeignKey('palestre.id_palestra'), primary_key=True, nullable=False, index=True),

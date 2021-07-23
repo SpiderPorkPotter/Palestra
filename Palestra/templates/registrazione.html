@@ -7,14 +7,24 @@
 <form action="{{ url_for('registrazione') }}" method="POST">
     <div class="form-group">
         {{ form.hidden_tag() }}
-        {{ wtf.form_field(form.codice_fiscale) }}
-        {{ wtf.form_field(form.nome) }}
-        {{ wtf.form_field(form.cognome) }}
-     ## {{ wtf.form_field(form.data) }} 
-        {{ wtf.form_field(form.telefono) }}
-        {{ wtf.form_field(form.email) }}
-        {{ wtf.form_field(form.password) }}
-     ## {{ wtf.form_field(form.chk_password) }}
+        {{ form.codice_fiscale.label }}:
+        {{ form.codice_fiscale(class_="form-control") }}
+        <br />
+        {{ form.nome.label }}:
+        {{ form.nome(class_="form-control") }}
+        <br />
+        {{ form.cognome.label }}:
+        {{ form.cognome(class_="form-control") }}
+        <br />
+        {{ form.telefono.label }}:
+        {{ form.telefono(class_="form-control") }}
+        <br />
+        {{ form.email.label }}:
+        {{ form.email(class_="form-control") }}
+        <br />
+        {{ form.password.label }}:
+        {{ form.password(class_="form-control") }}
+
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
