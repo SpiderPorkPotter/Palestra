@@ -32,6 +32,9 @@
     <Compile Include="Palestra\models.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Palestra\modelsv2.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="runserver.py" />
     <Compile Include="Palestra\__init__.py" />
     <Compile Include="Palestra\views.py" />

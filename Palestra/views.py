@@ -3,7 +3,7 @@ Routes and views for the flask application.
 """
 
 from datetime import datetime
-from flask import render_template, url_for, redirect, request, session
+from flask import render_template, url_for, redirect, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin
 from flask_wtf import FlaskForm
@@ -12,21 +12,14 @@ from wtforms.fields.html5 import DateTimeLocalField
 from wtforms.validators import InputRequired, Email, Length
 from sqlalchemy import create_engine
 from Palestra import app
-from .models import Persone
+from .modelsv2 import Persone, Palestre, Base
 from werkzeug.security import generate_password_hash, check_password_hash
+from . import db
 
-#psycopg2 è il driver che si usaper comunicare col database
+#psycopg2 è il driver che si usa per comunicare col database
+
 DB_URI = "postgresql+psycopg2://postgres:a@localhost/Palestra"
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
-app.config['SECRET_KEY'] = '!9m@S-dThyIlW[pHQbN^'
-
-#non ho capito bene in quale posizione vada messo
-db = SQLAlchemy(app)
-
 engine = create_engine(DB_URI)
-db.init_app(app)
 
 #inizializza la libreria che gestisce i login
 login_manager = LoginManager()
@@ -80,18 +73,21 @@ def login():
     form = LoginForm()
 
     #se tutti i campi sono validati
+    em = form.email.data
+    pwd = form.password.data
     #controlla che ci sia una sola email corrispondente
     if form.validate_on_submit():
-        utente = Persone.query.filter_by(email = form.email.data).first()
+        utente = Persone.query.filter_by(email = em).first()
         #se c'è, allora controlla anche la password (salvata criptata)
-        if utente:
+        if utente is not None and utente.check_password(pwd):
             #se tutto va bene, effettua il login, aggiungendo l'utente
             #alla sessione e riportandolo alla schermata profilo
-            if check_password_hash(Persone.passwd, form.password.data):
-                login_user(utente)
-                return redirect(url_for('profilo'))
+          #  if check_password_hash(Persone.password, form.password.data):
+            login_user(utente)
+            return redirect(url_for('profilo'))
         #else
-        return '<h1> email o password sbagliati'
+        flash('Email o Password errati')
+        return redirect('/profilo')
         
 
     return render_template('login.html', title = 'login', form = form)
@@ -99,29 +95,34 @@ def login():
 
 @app.route('/registrazione', methods = ['GET','POST'])
 def registrazione():
+    #si basa sulla classe definita sopra
     form = RegistrazioneForm()
 
     if form.validate_on_submit():
-        # sha256 genera 80 caratteri
-        #e inizializza un oggetto nuovo_utente con i valori inseriti nel form di
-        #registrazione
-        hashed_passwd = generate_password_hash(form.password.data, method='sha256')
-        nuovo_utente = Persone(codice_fiscale = form.codice_fiscale.data,
-                               nome = form.nome.data,
-                               cognome = form.cognome.data,
-                          #    data = form.data.data,
-                               telefono = form.telefono.data,
-                               email = form.email.data, 
-                               password = hashed_passwd,
-                          #     chk_password = form.chk_password.data,)
+        
+        #prendo il contenuto del form di registrazione
+        codiceFisc = form.codice_fiscale.data
+        nom = form.nome.data
+        cogn = form.cognome.data
+        tel = form.telefono.data
+        em = form.email.data
+        passwd = form.password.data
+
+        nuovo_utente = Persone(codice_fiscale = codiceFisc,
+                               nome = nom,
+                               cognome = cogn,
+                               telefono = tel,
+                               email = em 
                                )
 
+        nuovo_utente.set_password(passwd)
+
+        #guardare documentazione per session
         db.session.add(nuovo_utente)
         db.session.commit()
 
-        return '<h1> È stato inserito un nuovo utente'
-
-    #hash della password
+        flash('Registrazione completata')
+        return redirect('/login')
 
     return render_template('registrazione.html', title = 'registrazione', form = form)
 
