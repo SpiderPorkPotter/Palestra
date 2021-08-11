@@ -12,7 +12,8 @@ from wtforms.fields.html5 import DateTimeLocalField
 from wtforms.validators import InputRequired, Email, Length
 from sqlalchemy import create_engine
 from Palestra import app
-from .modelsv2 import Persone, Palestre, Base
+#from .modelsv2 import Persone, Palestre, Base
+from .models import Persone, Palestre, t_palestre_persone, Base
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 

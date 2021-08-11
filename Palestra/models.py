@@ -24,23 +24,24 @@ class FasciaOraria(Base):
 
 #db.Model potrebbe dare fastidio facendo operazioni. Se le query eseguite non funzionano
 #spostarlo dopo Base o toglierlo
-class Persone(UserMixin, db.Model, Base):
+class Persone(UserMixin, Base, db.Model):
     __tablename__ = 'persone'
 
+    #quelli con #false significa che prima erano a nullable=True
+    #è una mod temporanea
     codice_fiscale = Column(String(16), primary_key=True)
     nome = Column(String(50), nullable=False)
     cognome = Column(String(50), nullable=False)
-    data_iscrizione = Column(Date, nullable=False)
+    data_iscrizione = Column(Date, nullable=True) #False
     telefono = Column(Integer, nullable=False)
-    is_istruttore = Column(Boolean, nullable=False)
+    is_istruttore = Column(Boolean, nullable=True) #False
     email = Column(String(50), nullable=False)
-    passwd = Column(String(80), nullable=False)
-    grado_accesso = Column(Integer, nullable=False)
+    password = Column(String(80), nullable=False)
+    grado_accesso = Column(Integer, nullable=True) #False
 
     palestre = relationship('Palestre', secondary='palestre_persone')
 
     def __repr__(self):
-        # easy to override, and it'll honor __repr__ in foreign relationships
         return self._repr(codice_fiscale=self.codice_fiscale,
                           nome = self.nome,
                           cognome = self.cognome,
@@ -53,7 +54,7 @@ class Persone(UserMixin, db.Model, Base):
 
     #converte la password da normale ad "hashata"
     def set_password(self, pwd):
-        self.password = generate_password_hash(pwd)
+        self.password = generate_password_hash(pwd, method = 'sha256', salt_length = 8)
 
     #controlla l'hash della password
     def check_password(self, pwd):
