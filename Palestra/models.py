@@ -42,15 +42,17 @@ class Persone(UserMixin, Base, db.Model):
     palestre = relationship('Palestre', secondary='palestre_persone')
 
     def __repr__(self):
-        return self._repr(codice_fiscale=self.codice_fiscale,
-                          nome = self.nome,
-                          cognome = self.cognome,
-                          data_iscrizione = self.data_iscrizione,
-                          telefono = self.telefono,
-                          is_istruttore = self.is_istruttore,
-                          email = self.email,
-                          passwd = self.passwd,
-                          grado_accesso = self.grado_accesso)
+        return self.__repr__(
+                                codice_fiscale=self.codice_fiscale,
+                                nome = self.nome,
+                                cognome = self.cognome,
+                                data_iscrizione = self.data_iscrizione,
+                                telefono = self.telefono,
+                                is_istruttore = self.is_istruttore,
+                                email = self.email,
+                                password = self.password,
+                                grado_accesso = self.grado_accesso
+                            )
 
     #converte la password da normale ad "hashata"
     def set_password(self, pwd):

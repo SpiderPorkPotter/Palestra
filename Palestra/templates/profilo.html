@@ -6,21 +6,21 @@
 
 <div class="container">
 
-    <ul id="utente">
+    <ul id="users">
         <li>
             <!--users è l'oggetto utente. Cioè come una scatola che contiene le info della 
                 persona loggata nel momento corrente'-->
             <span class="field-name">Utente:</span>
-            <span class="field-value">{{ users.nome }}</span>
-            <span class="field-value">{{ users.cognome }}</span>
+            <span class="field-value">{{ user.nome }}</span>
+            <span class="field-value">{{ user.cognome }}</span>
         </li>
         <li>
             <span class="field-name">Email:</span>
-            <span class="field-value">{{ users.email }}</span>
+            <span class="field-value">{{ user.email }}</span>
         </li>
         <li>
             <span class="field-name">Telefono:</span>
-            <span class="field-value">{{ users.telefono }}</span>
+            <span class="field-value">{{ user.telefono }}</span>
         </li>
     </ul>
     <hr />
@@ -32,22 +32,21 @@
         <thead>
             <tr>
                 <th scope="col">Email</th>
-                <th scope="col">Posti</th>
-                <th scope="col">Titolo</th>
-                <th scope="col">Orario</th>
-                <th scope="col">Data</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Cognome</th>
+                <th scope="col">È istruttore?</th>
+                
             </tr>
         </thead>
         <tbody>
             <!--qua vengono inseriti i dati relativi alle varie prenotazioni.
                 appariranno in tabelle separate da una riga-->
-            {% for p in righe %}
+            {% for p in dati_richiesti %}
             <tr>
-
                 <td>{{p.email}}</td>
-                <td>{{p.titolo}}</td>
-                <td>{{p.orario}}</td>
-                <td>{{p.data}}</td>
+                <td>{{p.nome}}</td>
+                <td>{{p.cognome}}</td>
+                <td>{{p.is_istruttore}}</td>
             </tr>
             {% endfor %}
         </tbody>

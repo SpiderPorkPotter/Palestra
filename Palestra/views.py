@@ -128,9 +128,25 @@ def registrazione():
     return render_template('registrazione.html', title = 'registrazione', form = form)
 
 
-
-@app.route('/logout')
 @login_required
+@app.route('/profilo')
+def profilo():
+
+    id = Persone.get_id(current_user)
+    user = Persone.query.filter_by(codice_fiscale = id).first()
+    print(user)
+
+
+    return render_template(
+        'profilo.html',
+        #user = Persone.query.filter_by(codice_fiscale = id).first(),
+        #dati_richiesti = db.session.execute("SELECT p.email, p.nome, p.cognome, p.is_istruttore FROM Persone as p WHERE p.codice_fiscale = :id", {"id": current_user.get_id()}).first(),
+        title = 'Il mio profilo'
+        )
+
+
+@login_required
+@app.route('/logout')
 def logout():
     #elimina dalla sessione l'utente attuale
     logout_user()
@@ -158,15 +174,6 @@ def istruttori():
     return render_template(
         'istruttori.html',
         title='istruttori'
-    )
-
-
-@app.route('/profilo')
-def profilo():
-    """Renders the contact page."""
-    return render_template(
-        'profilo.html',
-        title='profilo'
     )
 
 
