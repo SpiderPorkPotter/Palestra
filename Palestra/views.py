@@ -149,7 +149,7 @@ def calendario():
 def corsi():
     return render_template(
         'corsi.html',
-        title='corsi'
+        title='Corsi Disponibili'
     )
 
 
