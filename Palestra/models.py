@@ -70,8 +70,11 @@ class Persone(UserMixin, Base, db.Model):
         """Vero sel'utente è attivo"""
         return True
 
+    #restituisce l'id, ma non riesce a leggerlo perché non è nella codifica corretta
+    #la conversione in unicode come scritto nella documentazione dovrebbe funzionare
     def get_id(self):
-        return self.codice_fiscale
+        return unicode(self.codice_fiscale)
+
 
     def is_authenticated(self):
         """Ritorna true se l'utente è autenticato"""

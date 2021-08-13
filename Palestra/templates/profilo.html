@@ -11,16 +11,16 @@
             <!--users è l'oggetto utente. Cioè come una scatola che contiene le info della 
                 persona loggata nel momento corrente'-->
             <span class="field-name">Utente:</span>
-            <span class="field-value">{{ user.nome }}</span>
-            <span class="field-value">{{ user.cognome }}</span>
+            <span class="field-value">{{ users.nome }}</span>
+            <span class="field-value">{{ users.cognome }}</span>
         </li>
         <li>
             <span class="field-name">Email:</span>
-            <span class="field-value">{{ user.email }}</span>
+            <span class="field-value">{{ users.email }}</span>
         </li>
         <li>
             <span class="field-name">Telefono:</span>
-            <span class="field-value">{{ user.telefono }}</span>
+            <span class="field-value">{{ users.telefono }}</span>
         </li>
     </ul>
     <hr />
@@ -40,7 +40,9 @@
         </thead>
         <tbody>
             <!--qua vengono inseriti i dati relativi alle varie prenotazioni.
-                appariranno in tabelle separate da una riga-->
+                appariranno in tabelle separate da una riga
+                dati_richiesti è il contenitore dei dati che viene passata da views
+                p serve a scorrerli e a stamparli-->
             {% for p in dati_richiesti %}
             <tr>
                 <td>{{p.email}}</td>
