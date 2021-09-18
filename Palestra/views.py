@@ -3,6 +3,7 @@ Routes and views for the flask application.
 """
 
 from datetime import datetime
+from calendar import monthrange
 from flask import render_template, url_for, redirect, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin
@@ -31,7 +32,7 @@ login_manager.login_view = 'login'
 #traccia dell'utente loggato, tramite il suo id di sessione
 @login_manager.user_loader
 def user_loader(id):
-    return Persone.query.get(unicode(id)
+    return Persone.query.get(unicode(id))
 
 #classe di wtforms che contiene il form di login
 #scrivendo nell'html usando la sintassi di jinja2
@@ -158,21 +159,9 @@ def logout():
     logout_user()
     return redirect('/home')
 
-
-@app.route('/calendario')
-def calendario():
-    return render_template(
-        'calendario.html',
-        title='calendario'
-    )
-
-
 @app.route('/corsi')
 def corsi():
-    return render_template(
-        'corsi.html',
-        title='Corsi Disponibili'
-    )
+     return render_template( 'corsi.html',title='Corsi Disponibili')
 
 
 @app.route('/istruttori')
@@ -191,4 +180,13 @@ def creazionePalestra():
         title='Crea La Palestra'
     )
 
+
+@app.route('/calendario')
+def calendario():
+    mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
+    data_corrente = datetime.today()
+    anno = data_corrente.year
+    mese = data_corrente.month
+    num_giorni = monthrange(anno, mese)[1]
+    return render_template('calendario.html',title='calendario', meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese])
 

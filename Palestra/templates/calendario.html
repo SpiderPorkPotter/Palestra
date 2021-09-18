@@ -2,6 +2,29 @@
 
 {% block content %}
 
+
 <h1>Sono la pagina del calendario</h1>
+
+<table>
+    <th> {{nomeMese}}</th>
+    {%set giorno = 1 %}
+    
+    <tr>
+    {% for giorno in range(1, num_giorni+1) %}
+    
+        {% if giorno % 7 == 0 %}
+            <td>{{giorno}}</td>
+            </tr>
+            <tr>
+        {% else %}
+        <td>{{giorno}}</td>     
+        {% endif %}
+    
+ {% endfor %}
+            
+</table>
+
+
+
 
 {% endblock %}
