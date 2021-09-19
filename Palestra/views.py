@@ -163,10 +163,12 @@ def logout():
 def corsi():
     if request.method == 'POST':
         data = request.form['dataSelezionata']
+        #livelloUtente è il livello dell'utente (da fare) come prova ho messo 2
+        livello_utente = 2
         
         # SE VOGLIO USARE GET USO QUESTA SINTASSI : data = request.args.get('dataSelezionata', '')
         # da fare query dei corsi in quella 'data'
-        return render_template( 'corsi.html',title='Corsi Disponibili', data = data)
+        return render_template( 'corsi.html',title='Corsi Disponibili', data = data, livelloUtente = livello_utente)
     else: 
         return render_template( 'corsi.html',title='Corsi Disponibili', )
 
@@ -190,6 +192,8 @@ def creazionePalestra():
 
 @app.route('/calendario', methods=['POST', 'GET'])
 def calendario():
+    
+    
     mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
     data_corrente = datetime.today()
     anno = data_corrente.year
@@ -208,5 +212,5 @@ def calendario():
                 mese = 1
    
     num_giorni = monthrange(anno, mese)[1]
-    return render_template('calendario.html',title='calendario', meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese-1], annoNumerico = anno)
+    return render_template('calendario.html',title='calendario', meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese-1],annoNumerico = anno)
 
