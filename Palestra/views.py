@@ -165,7 +165,7 @@ def corsi():
         data = request.form['dataSelezionata']
         
         # SE VOGLIO USARE GET USO QUESTA SINTASSI : data = request.args.get('dataSelezionata', '')
-        # da fare query dei corsi
+        # da fare query dei corsi in quella 'data'
         return render_template( 'corsi.html',title='Corsi Disponibili', data = data)
     else: 
         return render_template( 'corsi.html',title='Corsi Disponibili', )
@@ -188,13 +188,25 @@ def creazionePalestra():
     )
 
 
-@app.route('/calendario')
+@app.route('/calendario', methods=['POST', 'GET'])
 def calendario():
-    
     mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
     data_corrente = datetime.today()
     anno = data_corrente.year
     mese = data_corrente.month
+    if request.method == 'POST':
+        if request.form['cambiaMese'] == 'Precedente':
+            mese = int(request.form['meseCorrenteSelezionato'])-1
+            if mese == 0:
+                anno = int(request.form['annoCorrenteSelezionato'])-1
+                mese = 12
+
+        if request.form['cambiaMese'] == 'Successivo':
+            mese = int(request.form['meseCorrenteSelezionato'])+1
+            if mese == 13:
+                anno = int(request.form['annoCorrenteSelezionato'])+1
+                mese = 1
+   
     num_giorni = monthrange(anno, mese)[1]
     return render_template('calendario.html',title='calendario', meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese-1], annoNumerico = anno)
 

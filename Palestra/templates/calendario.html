@@ -6,7 +6,23 @@
 <h1>Sono la pagina del calendario</h1>
 
 <table>
-    <th> {{nomeMese}}</th>
+    <th> <form action="/calendario" method="POST">
+        <input name="cambiaMese" type="submit" value="Precedente">
+        <input name="meseCorrenteSelezionato" type="hidden" value="{{meseNumerico}}">
+        <input name="annoCorrenteSelezionato" type="hidden" value="{{annoNumerico}}">
+    </form>
+    </th>
+
+    <th> {{nomeMese}}</th>  
+    <th> {{annoNumerico}}</th>  
+    
+    <th> <form action="/calendario" method="POST">
+        <input name="cambiaMese" type="submit" value="Successivo">
+        <input name="meseCorrenteSelezionato" type="hidden" value="{{meseNumerico}}">
+        <input name="annoCorrenteSelezionato" type="hidden" value="{{annoNumerico}}">
+    </form>
+    </th>
+
     {%set giorno = 1 %}
     <tr><td>Lunedì</td><td>Martedì</td><td>Mercoledì</td><td>Giovedì</td><td>Venerdì</td><td>Sabato</td><td>Domenica</td></tr>
     <tr>
