@@ -22,15 +22,17 @@
         <input name="annoCorrenteSelezionato" type="hidden" value="{{annoNumerico}}">
     </form>
     </th>
-
-    {%set giorno = 1 %}
     <tr><td>Lunedì</td><td>Martedì</td><td>Mercoledì</td><td>Giovedì</td><td>Venerdì</td><td>Sabato</td><td>Domenica</td></tr>
     <tr>
-   
+        {%set giorno = 1 %}
         {% for giorno in range(1, num_giorni+1) %}
         <td>
             <form method="POST" action='/corsi'>
-            <input name="GiornoSelezionato" class="btn" type="submit" value="{{giorno}}">
+            {% if dataCorrente["giorno"] == giorno and dataCorrente["mese"] == meseNumerico and dataCorrente["anno"] == annoNumerico  %}
+                <input name="GiornoSelezionato" style="background-color:cyan" class="btn" type="submit" value="{{giorno}}">
+            {% else  %}
+                <input name="GiornoSelezionato" class="btn" type="submit" value="{{giorno}}">
+            {% endif %}
             <input type="hidden" name="dataSelezionata" value="{{annoNumerico}} {{meseNumerico}} {{giorno}}">
             </form>
         </td>

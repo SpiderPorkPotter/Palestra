@@ -196,8 +196,11 @@ def calendario():
     
     mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
     data_corrente = datetime.today()
+   
     anno = data_corrente.year
     mese = data_corrente.month
+    data_corrente = {"anno" : anno , "mese" : mese , "giorno" : data_corrente.day } # anno mese giorno
+
     if request.method == 'POST':
         if request.form['cambiaMese'] == 'Precedente':
             mese = int(request.form['meseCorrenteSelezionato'])-1
@@ -212,5 +215,7 @@ def calendario():
                 mese = 1
    
     num_giorni = monthrange(anno, mese)[1]
-    return render_template('calendario.html',title='calendario', meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese-1],annoNumerico = anno)
+    return render_template('calendario.html',title='calendario', 
+    meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese-1],annoNumerico = anno,
+    dataCorrente = data_corrente)
 
