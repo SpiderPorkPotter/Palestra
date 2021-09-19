@@ -8,20 +8,21 @@
 <table>
     <th> {{nomeMese}}</th>
     {%set giorno = 1 %}
-    
+    <tr><td>Lunedì</td><td>Martedì</td><td>Mercoledì</td><td>Giovedì</td><td>Venerdì</td><td>Sabato</td><td>Domenica</td></tr>
     <tr>
-    {% for giorno in range(1, num_giorni+1) %}
-    
-        {% if giorno % 7 == 0 %}
-            <td>{{giorno}}</td>
-            </tr>
-            <tr>
-        {% else %}
-        <td>{{giorno}}</td>     
-        {% endif %}
-    
- {% endfor %}
-            
+   
+        {% for giorno in range(1, num_giorni+1) %}
+        <td>
+            <form method="POST" action='/corsi'>
+            <input name="GiornoSelezionato" class="btn" type="submit" value="{{giorno}}">
+            <input type="hidden" name="dataSelezionata" value="{{annoNumerico}} {{meseNumerico}} {{giorno}}">
+            </form>
+        </td>
+            {% if giorno % 7 == 0 %}
+                </tr> <tr>
+                {% endif %}
+        {% endfor %}
+        
 </table>
 
 

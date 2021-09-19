@@ -159,9 +159,16 @@ def logout():
     logout_user()
     return redirect('/home')
 
-@app.route('/corsi')
+@app.route('/corsi', methods = ['POST', 'GET'])
 def corsi():
-     return render_template( 'corsi.html',title='Corsi Disponibili')
+    if request.method == 'POST':
+        data = request.form['dataSelezionata']
+        
+        # SE VOGLIO USARE GET USO QUESTA SINTASSI : data = request.args.get('dataSelezionata', '')
+        # da fare query dei corsi
+        return render_template( 'corsi.html',title='Corsi Disponibili', data = data)
+    else: 
+        return render_template( 'corsi.html',title='Corsi Disponibili', )
 
 
 @app.route('/istruttori')
@@ -183,10 +190,11 @@ def creazionePalestra():
 
 @app.route('/calendario')
 def calendario():
+    
     mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
     data_corrente = datetime.today()
     anno = data_corrente.year
     mese = data_corrente.month
     num_giorni = monthrange(anno, mese)[1]
-    return render_template('calendario.html',title='calendario', meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese])
+    return render_template('calendario.html',title='calendario', meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese-1], annoNumerico = anno)
 
