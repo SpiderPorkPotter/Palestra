@@ -30,9 +30,21 @@ login_manager.login_view = 'login'
 
 #funzione importante che serve affinché flask login tenga
 #traccia dell'utente loggato, tramite il suo id di sessione
+#segue l'esempio che c'è qui: https://flask-login.readthedocs.io/en/latest/#your-user-class
+@login_manager.user_loader
+def user_loader(id_utente):
+    return Persone.query.filter_by(codice_fiscale = id_utente).first()
+
+'''
+vecchia funzione, in test quella nuova, collocata sopra
 @login_manager.user_loader
 def user_loader(id):
-    return Persone.query.get(unicode(id))
+    return Persone.query.get(unicode(id))'''
+
+
+
+
+
 
 #classe di wtforms che contiene il form di login
 #scrivendo nell'html usando la sintassi di jinja2
@@ -127,8 +139,8 @@ def registrazione():
 
     return render_template('registrazione.html', title = 'registrazione', form = form)
 
-
-@login_required
+#per ora la commento
+#@login_required
 @app.route('/profilo')
 def profilo():
 
@@ -146,8 +158,8 @@ def profilo():
    #dati_richiesti è la tabella con i dati che poi viene mostrata in profilo.html
     return render_template(
         'profilo.html',
-        users = Persone.query.filter_by(codice_fiscale = id).first(),
-        dati_richiesti = db.session.execute("SELECT p.email, p.nome, p.cognome, p.is_istruttore FROM Persone as p WHERE p.codice_fiscale = :id", {"id": current_user.get_id()}).first(),
+        #users = Persone.query.filter_by(codice_fiscale = id).first(),
+        #dati_richiesti = db.session.execute("SELECT p.email, p.nome, p.cognome, p.is_istruttore FROM Persone as p WHERE p.codice_fiscale = :id", {"id": current_user.get_id()}).first(),
         title = 'Il mio profilo'
         )
 
