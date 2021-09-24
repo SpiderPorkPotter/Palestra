@@ -17,7 +17,7 @@
     <SuppressCollectPythonCloudServiceFiles>true</SuppressCollectPythonCloudServiceFiles>
     <Name>Palestra</Name>
     <RootNamespace>Palestra</RootNamespace>
-    <InterpreterId>Workspace|Workspace|env funz</InterpreterId>
+    <InterpreterId>Global|VisualStudio|env funz</InterpreterId>
     <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -83,7 +83,7 @@
     <Content Include="Palestra\templates\layout.html" />
   </ItemGroup>
   <ItemGroup>
-    <InterpreterReference Include="Workspace|Workspace|env funz" />
+    <InterpreterReference Include="Global|VisualStudio|env funz" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Web.targets" />
   <!-- Specify pre- and post-build commands in the BeforeBuild and 
