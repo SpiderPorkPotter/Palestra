@@ -130,7 +130,7 @@ def registrazione():
         #lo aggiungo alla sessione per le modifiche al database
         db.session.add(nuovo_utente)
         #con flush le modifiche dovrebbero essere inviate al db, ma non sono persistenti ancora
-        sb.session.flush()
+        db.session.flush()
 
         #creo l'oggetto dell info del contatto
         info_nuovo_utente = InfoContatti(
