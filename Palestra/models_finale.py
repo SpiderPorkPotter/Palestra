@@ -1,11 +1,20 @@
 # coding: utf-8
+#generato con sqlacodegen postgresql://postgres:a@localhost/Palestra --outfile modelsv_finale.py
+#a è la password del mio db
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Time
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin, LoginManager
+from werkzeug.security import generate_password_hash, check_password_hash
+from . import db
+
+
 
 Base = declarative_base()
 metadata = Base.metadata
 
+login_manager = LoginManager()
 
 class FasciaOraria(Base):
     __tablename__ = 'fascia_oraria'
@@ -15,7 +24,7 @@ class FasciaOraria(Base):
     fine = Column(Time, nullable=False)
 
 
-class Persone(Base):
+class Persone(UserMixin, Base, db.Model):
     __tablename__ = 'persone'
 
     codice_fiscale = Column(String(16), primary_key=True)
@@ -24,6 +33,43 @@ class Persone(Base):
     data_iscrizione = Column(Date, nullable=False)
     email = Column(String(50), nullable=False)
     password = Column(String(80), nullable=False)
+
+    #############
+    #__repr__ restituisce un array associativo contentente i valori qui sotto elencati, vedi link per chiarimenti
+    #https://stackoverflow.com/questions/57647799/what-is-the-purpose-of-thing-sub-function-returning-repr-with-f-str
+    def __repr__(self):
+        return self._repr(
+                            codice_fiscale = self.codice_fiscale,
+                            nome = self.nome,
+                            cognome = self.cognome,
+                            data_iscrizione = self.data_iscrizione,
+                            telefono = self.telefono,
+                            email = self.email,
+                            password = self.password,
+                          )
+
+    #converte la password da normale ad "hashata"
+    def set_password(self, pwd):
+        self.password = generate_password_hash(pwd, method = 'sha256', salt_length = 8)
+
+    #controlla l'hash della password
+    def check_password(self, pwd):
+        return check_password_hash(self.password, pwd)   
+
+    def is_active(self):
+        """Vero sel'utente è attivo"""
+        return True
+
+    def get_id(self):
+        return self.codice_fiscale
+
+    def is_authenticated(self):
+        """Ritorna true se l'utente è autenticato"""
+        return True
+
+    def is_anonymous(self):
+        """Ritorna falso, perché gli utenti anonimi non sono supportati"""
+        return False
 
 
 class Ruoli(Persone):
@@ -70,8 +116,8 @@ class GiorniSettimana(Base):
 class InfoContatti(Base):
     __tablename__ = 'info_contatti'
 
-    cellulare = Column(String(11), primary_key=True)
-    tel_fisso = Column(String(11), nullable=False)
+    cellulare = Column(String(11), primary_key=True, nullable=False)
+    tel_fisso = Column(String(11), nullable=True)
     residenza = Column(String(50), nullable=False)
     città = Column(String(50), nullable=False)
     codice_fiscale = Column(ForeignKey('persone.codice_fiscale'), nullable=False, index=True)

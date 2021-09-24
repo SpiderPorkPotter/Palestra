@@ -17,7 +17,7 @@
     <SuppressCollectPythonCloudServiceFiles>true</SuppressCollectPythonCloudServiceFiles>
     <Name>Palestra</Name>
     <RootNamespace>Palestra</RootNamespace>
-    <InterpreterId>Global|VisualStudio|env funz</InterpreterId>
+    <InterpreterId>Global|PythonCore|3.7</InterpreterId>
     <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -29,12 +29,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Palestra\models.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Palestra\modelsv2.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Palestra\models_finale.py" />
     <Compile Include="runserver.py" />
     <Compile Include="Palestra\__init__.py" />
     <Compile Include="Palestra\views.py" />
@@ -83,6 +78,7 @@
     <Content Include="Palestra\templates\layout.html" />
   </ItemGroup>
   <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.7" />
     <InterpreterReference Include="Global|VisualStudio|env funz" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Web.targets" />

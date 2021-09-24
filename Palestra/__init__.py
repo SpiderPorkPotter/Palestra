@@ -28,4 +28,4 @@ db.init_app(app)
 #perché app non esisterebbe ancora
 import Palestra.views
 import Palestra.models_finale
-#import Palestra.modelsv2
+

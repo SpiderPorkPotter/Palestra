@@ -13,7 +13,7 @@ from wtforms.fields.html5 import DateTimeLocalField
 from wtforms.validators import InputRequired, Email, Length
 from sqlalchemy import create_engine
 from Palestra import app
-from .models_finale import *
+from .models_finale import * 
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 
@@ -34,16 +34,6 @@ login_manager.login_view = 'login'
 def user_loader(id_utente):
     return Persone.query.filter_by(codice_fiscale = id_utente).first()
 
-'''
-vecchia funzione, in test quella nuova, collocata sopra
-@login_manager.user_loader
-def user_loader(id):
-    return Persone.query.get(unicode(id))'''
-
-
-
-
-
 
 #classe di wtforms che contiene il form di login
 #scrivendo nell'html usando la sintassi di jinja2
@@ -60,15 +50,16 @@ class RegistrazioneForm(FlaskForm):
     codice_fiscale = StringField('Codice fiscale', validators = [InputRequired(), Length(min = 11, max = 16)])
     nome = StringField('Nome', validators = [InputRequired(), Length(min = 3, max = 50)])
     cognome = StringField('Cognome', validators = [InputRequired(), Length(min = 3, max = 50)])
-    #probabilmente questo campo è inutile
-    #data = DateTimeLocalField('seleziona la data di oggi', format = '%d/%m/y', validators = InputRequired())
-    telefono = IntegerField('Telefono', validators = [InputRequired()])
+    #la data dell'iscrizione la prendiamo al momento della registrazione    
     email = StringField('Email', validators = [InputRequired(), Email(message = 'Email non valida'), Length(max = 50)])
     password = PasswordField('Password', validators = [InputRequired(), Length(min = 8, max = 50)])
     #mettiamo il conferma password? Boh, intanto c'è, poi al massimo lo eliminiamo
     #chk_password = PasswordField('conferma password', validators = [InputRequired(), Length(min = 8, max = 50)])
-
-
+    #le opzioni di contatto 
+    telefono = StringField('Telefono', validators = [InputRequired(), Length(min = 9, max = 11)])
+    telefonoFisso = StringField('Telefono fisso', validators = [Length(min = 9, max = 11)])
+    residenza = StringField('Luogo di residenza', validators = [InputRequired()])
+    città = StringField('Città di residenza', validators = [InputRequired()])
 
 
 @app.route('/')
@@ -110,6 +101,7 @@ def login():
 def registrazione():
     #si basa sulla classe definita sopra
     form = RegistrazioneForm()
+    
 
     if form.validate_on_submit():
         
@@ -117,20 +109,41 @@ def registrazione():
         codiceFisc = form.codice_fiscale.data
         nom = form.nome.data
         cogn = form.cognome.data
-        tel = form.telefono.data
         em = form.email.data
         passwd = form.password.data
 
-        nuovo_utente = Persone(codice_fiscale = codiceFisc,
-                               nome = nom,
-                               cognome = cogn,
-                               telefono = tel,
-                               email = em 
+        #per l'oggetto contatti
+        tel = form.telefono.data
+        telFisso = form.telefonoFisso.data
+        resdz = form.residenza.data
+        citt = form.città.data
+
+        #creo l'oggetto utente
+        nuovo_utente = Persone(
+                                codice_fiscale = codiceFisc,
+                                nome = nom,
+                                cognome = cogn,
+                                email = em 
                                )
-
+        #gli inserisco una password hashata
         nuovo_utente.set_password(passwd)
-
+        #lo aggiungo alla sessione per le modifiche al database
         db.session.add(nuovo_utente)
+        #con flush le modifiche dovrebbero essere inviate al db, ma non sono persistenti ancora
+        sb.session.flush()
+
+        #creo l'oggetto dell info del contatto
+        info_nuovo_utente = InfoContatti(
+                                          cellulare = tel,
+                                          tel_fisso = telFisso,
+                                          residenza = resdz,
+                                          città = citt,
+                                          codice_fiscale = codiceFisc
+                                        )
+        #faccio la stessa cosa di quello sopra
+        db.session.add(info_nuovo_utente)
+        #solo che ora faccio la commit per rendere effettive tutte le modifiche al
+        #database
         db.session.commit()
 
         flash('Registrazione completata')
@@ -139,7 +152,7 @@ def registrazione():
     return render_template('registrazione.html', title = 'registrazione', form = form)
 
 #per ora la commento
-#@login_required
+@login_required
 @app.route('/profilo')
 def profilo():
 
