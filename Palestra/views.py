@@ -204,7 +204,7 @@ def creazionePalestra():
 
 @app.route('/calendario', methods=['POST', 'GET'])
 def calendario():
-    
+    #calendario
     
     mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
     data_corrente = datetime.today()
