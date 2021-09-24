@@ -59,7 +59,7 @@ class RegistrazioneForm(FlaskForm):
     telefono = StringField('Telefono', validators = [InputRequired(), Length(min = 9, max = 11)])
     telefonoFisso = StringField('Telefono fisso', validators = [Length(min = 9, max = 11)])
     residenza = StringField('Luogo di residenza', validators = [InputRequired()])
-    città = StringField('Città di residenza', validators = [InputRequired()])
+    citta = StringField('Città di residenza', validators = [InputRequired()])
 
 
 @app.route('/')
@@ -116,7 +116,7 @@ def registrazione():
         tel = form.telefono.data
         telFisso = form.telefonoFisso.data
         resdz = form.residenza.data
-        citt = form.città.data
+        citt = form.citta.data
 
         #creo l'oggetto utente
         nuovo_utente = Persone(
@@ -219,10 +219,12 @@ def calendario():
     #calendario
     
     mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
+    nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
     data_corrente = datetime.today()
    
     anno = data_corrente.year
     mese = data_corrente.month
+    
     data_corrente = {"anno" : anno , "mese" : mese , "giorno" : data_corrente.day } # anno mese giorno
 
     if request.method == 'POST':
@@ -237,9 +239,17 @@ def calendario():
             if mese == 13:
                 anno = int(request.form['annoCorrenteSelezionato'])+1
                 mese = 1
+
+    primo_giorno_indice = datetime(anno,mese,1).weekday()
+    primo_giorno_nome = nome_giorni_della_settimana[primo_giorno_indice]
    
+
+   
+
+    
     num_giorni = monthrange(anno, mese)[1]
     return render_template('calendario.html',title='calendario', 
     meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese-1],annoNumerico = anno,
-    dataCorrente = data_corrente)
+    dataCorrente = data_corrente,primo_giorno_nome = primo_giorno_nome, nome_giorni_settimana=nome_giorni_della_settimana,
+    indice_settimana_del_primo_giorno = primo_giorno_indice)
 
