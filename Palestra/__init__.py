@@ -27,5 +27,5 @@ db.init_app(app)
 #mettendoli in alto assieme agli altri, non funzionerebbero
 #perché app non esisterebbe ancora
 import Palestra.views
-import Palestra.models
+import Palestra.models_finale
 #import Palestra.modelsv2
