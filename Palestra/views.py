@@ -228,13 +228,13 @@ def calendario():
     data_corrente = {"anno" : anno , "mese" : mese , "giorno" : data_corrente.day } # anno mese giorno
 
     if request.method == 'POST':
-        if request.form['cambiaMese'] == 'Precedente':
+        if request.form['cambiaMese'] == '<-':
             mese = int(request.form['meseCorrenteSelezionato'])-1
             if mese == 0:
                 anno = int(request.form['annoCorrenteSelezionato'])-1
                 mese = 12
 
-        if request.form['cambiaMese'] == 'Successivo':
+        if request.form['cambiaMese'] == '->':
             mese = int(request.form['meseCorrenteSelezionato'])+1
             if mese == 13:
                 anno = int(request.form['annoCorrenteSelezionato'])+1
