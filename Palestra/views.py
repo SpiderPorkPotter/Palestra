@@ -7,7 +7,8 @@ from calendar import monthrange
 from flask import render_template, url_for, redirect, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, form
+from sqlalchemy.sql.elements import Null
 from wtforms import StringField, PasswordField, IntegerField, FormField
 from wtforms.fields.html5 import DateTimeLocalField
 from wtforms.validators import InputRequired, Email, Length
@@ -19,7 +20,7 @@ from . import db
 
 #psycopg2 è il driver che si usa per comunicare col database
 
-DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
 engine = create_engine(DB_URI)
 
 #inizializza la libreria che gestisce i login
@@ -123,7 +124,8 @@ def registrazione():
                                 codice_fiscale = codiceFisc,
                                 nome = nom,
                                 cognome = cogn,
-                                email = em 
+                                email = em ,
+                                data_iscrizione = datetime.today()
                                )
         #gli inserisco una password hashata
         nuovo_utente.set_password(passwd)
@@ -170,7 +172,7 @@ def profilo():
    #dati_richiesti è la tabella con i dati che poi viene mostrata in profilo.html
     return render_template(
         'profilo.html',
-        #users = Persone.query.filter_by(codice_fiscale = id).first(),
+        users = Persone.query.filter_by(codice_fiscale = id).first(),
         #dati_richiesti = db.session.execute("SELECT p.email, p.nome, p.cognome, p.is_istruttore FROM Persone as p WHERE p.codice_fiscale = :id", {"id": current_user.get_id()}).first(),
         title = 'Il mio profilo'
         )
@@ -253,3 +255,31 @@ def calendario():
     dataCorrente = data_corrente,primo_giorno_nome = primo_giorno_nome, nome_giorni_settimana=nome_giorni_della_settimana,
     indice_settimana_del_primo_giorno = primo_giorno_indice)
 
+
+@app.route('/admin', methods=['POST', 'GET'])
+def admin():
+    if request.method == 'POST':
+        nome = request.form['nome']
+        cf = request.form['cf']
+        cognome = request.form['cognome']
+        email = request.form['email']
+        pwd = request.form['psw']
+        
+        esiste =  Persone.query.filter_by(codice_fiscale = cf).first()
+        if esiste is not None:
+            flash("persona gia esistente")
+            return redirect(url_for("admin"))
+        else:
+            #inserisco i dati
+            try:
+                db.session.add(Persone
+                    (codice_fiscale = cf, nome = nome, cognome=cognome, email=email, data_iscrizione = datetime.today(), password = pwd)
+                    )
+                db.session.commit()
+            except:
+                flash("errore nell'inserimento")
+            
+    
+    return render_template("admin.html" , title='adminpage')
+    
+   
