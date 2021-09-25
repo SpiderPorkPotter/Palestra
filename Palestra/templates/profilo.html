@@ -8,7 +8,7 @@
 
     <ul id="users">
         <li>
-            <!--users è l'oggetto utente. Cioè come una scatola che contiene le info della 
+            <!--users ï¿½ l'oggetto utente. Cioï¿½ come una scatola che contiene le info della 
                 persona loggata nel momento corrente'-->
             <span class="field-name">Utente:</span>
             <span class="field-value">{{ users.nome }}</span>
@@ -34,14 +34,14 @@
                 <th scope="col">Email</th>
                 <th scope="col">Nome</th>
                 <th scope="col">Cognome</th>
-                <th scope="col">È istruttore?</th>
+                <th scope="col">istruttore</th>
                 
             </tr>
         </thead>
         <tbody>
             <!--qua vengono inseriti i dati relativi alle varie prenotazioni.
                 appariranno in tabelle separate da una riga
-                dati_richiesti è il contenitore dei dati che viene passata da views
+                dati_richiesti ï¿½ il contenitore dei dati che viene passata da views
                 p serve a scorrerli e a stamparli-->
             {% for p in dati_richiesti %}
             <tr>
