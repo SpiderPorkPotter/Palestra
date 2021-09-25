@@ -78,6 +78,8 @@ class Ruoli(Persone):
     codice_fiscale = Column(ForeignKey('persone.codice_fiscale'), primary_key=True, index=True)
     is_istruttore = Column(Boolean, nullable=False)
     is_responsabile = Column(Boolean, nullable=False)
+    is_capo = Column(Boolean, nullable=False)
+    is_iscritto = Column(Boolean, nullable=False)
 
 
 class Sale(Base):
