@@ -53,6 +53,16 @@
             {% endfor %}
         </tbody>
     </table>
+
+
+    <h2> lista iscritti</h2>
+    <table>
+        {%for row in lista_iscritti %}
+        <tr>
+            <td>{{ row['codice_fiscale'] }}</td> <td>{{ row['nome'] }}</td> <td>{{ row['nome'] }}</td>  <td>{{ row['telefono'] }}</td>  
+        </tr>
+        {% endfor %}
+    </table>
 </div>
 
 

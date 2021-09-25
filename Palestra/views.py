@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin
 from flask_wtf import FlaskForm, form
 from sqlalchemy.sql.elements import Null
+from sqlalchemy.sql.expression import text
 from wtforms import StringField, PasswordField, IntegerField, FormField
 from wtforms.fields.html5 import DateTimeLocalField
 from wtforms.validators import InputRequired, Email, Length
@@ -157,9 +158,19 @@ def registrazione():
 @login_required
 @app.route('/profilo')
 def profilo():
-
     #prendo l'id dell'utente corrente
-    id = Persone.get_id(current_user)
+    if current_user != None:
+        id = Persone.get_id(current_user)
+        #vedo se è un capo
+        s = text("SELECT codice_fiscale FROM ruoli WHERE is_capo IS TRUE AND codice_fiscale=:passed_id")
+        with engine.connect() as conn:
+            id_capo = conn.execute(s,passed_id=id)
+            if id == id_capo:
+                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono, FROM ruoli r JOIN persone p ON p.codice_fiscale=r.codice_fiscale JOIN info_contatti ON p.codice_fiscale=i.codice_fiscale WHERE r.is_isctritto IS TRUE")
+                with engine.connect() as conn:
+                    lista_iscritti = conn.execute(s)
+                    return render_template("profilo_html", title="profilo", lista_persone = lista_iscritti)
+    
 
     #queste tre righe sono di prova per vedere se effettivamente prende
     #qualcosa dal database, ma per ora non appare nulla. Le commento
@@ -201,10 +212,11 @@ def corsi():
 
 @app.route('/istruttori')
 def istruttori():
-    return render_template(
-        'istruttori.html',
-        title='istruttori'
-    )
+    with engine.connect() as conn:
+        q = text("SELECT p.nome,p.cognome,i.cellulare  FROM persone p JOIN ruoli r ON p.codice_fiscale = r.codice_fiscale JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE r.is_istruttore is TRUE")
+        lista_istruttori = conn.execute(q)
+    
+    return render_template('istruttori.html',title='istruttori',lista_istruttori = lista_istruttori )
 
 
 @app.route('/creazionePalestra')
@@ -245,7 +257,6 @@ def calendario():
     primo_giorno_indice = datetime(anno,mese,1).weekday()
     primo_giorno_nome = nome_giorni_della_settimana[primo_giorno_indice]
    
-
    
 
     
@@ -264,20 +275,35 @@ def admin():
         cognome = request.form['cognome']
         email = request.form['email']
         pwd = request.form['psw']
+        cell = request.form['cell']
+        residenza =  request.form['residenza']
+        citta = request.form['citta']
         
-        esiste =  Persone.query.filter_by(codice_fiscale = cf).first()
-        if esiste is not None:
-            flash("persona gia esistente")
-            return redirect(url_for("admin"))
-        else:
+        # esiste =  Persone.query.filter_by(codice_fiscale = cf).first()
+        #if esiste is not None:
+         #   flash("persona gia esistente")
+         #   return redirect(url_for("admin"))
+        #else:
             #inserisco i dati
-            try:
-                db.session.add(Persone
-                    (codice_fiscale = cf, nome = nome, cognome=cognome, email=email, data_iscrizione = datetime.today(), password = pwd)
-                    )
-                db.session.commit()
-            except:
-                flash("errore nell'inserimento")
+        try:
+            with engine.connect() as conn:
+                s = text("INSERT INTO persone(codice_fiscale,nome,cognome,email,data_iscrizione,password) VALUES (:codice_fiscale, :nome, :cognome, :email, :data_iscrizione, :password)")
+                conn.execute(s,codice_fiscale=cf, nome=nome, cognome=cognome,email=email, data_iscrizione = datetime.today(),password=generate_password_hash(pwd, method = 'sha256', salt_length = 8) )
+                s = text("INSERT INTO info_contatti(codice_fiscale,cellulare,città,residenza) VALUES (:codice_fiscale,:cellulare, :citta,:residenza)")
+                conn.execute(s,codice_fiscale=cf,cellulare=cell, citta = citta , residenza = residenza)
+                s = text("INSERT INTO ruoli(codice_fiscale,is_capo,is_iscritto,is_istruttore,is_responsabile) VALUES (:codice_fiscale,True,False,False,False)")
+                conn.execute(s,codice_fiscale=cf)
+                flash("inserimento")
+                
+
+                
+            
+                
+
+                
+        except:
+            flash("errore nell'inserimento")
+            raise
             
     
     return render_template("admin.html" , title='adminpage')

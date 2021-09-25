@@ -3,5 +3,14 @@
 {% block content %}
 
 <h1>Sono la pagina degli istruttori</h1>
+<table>
+    <tr><th>Nome</th><th>Cognome</th><th>Cellulare</th></tr>
+    
+    {% for row in lista_istruttori %}
+        <tr>
+        <td>{{ row['nome'] }}</td><td>{{ row['cognome'] }}</td><td>{{ row[cellulare'] }}</td>
+        <tr>
+    {{%endfor}}
+</table>
 
 {% endblock %}
