@@ -83,7 +83,6 @@ def login():
     pwd = form.password.data
     #controlla che ci sia una sola email corrispondente
     if request.method == 'POST':
-        print("arrivato")
         utente = Persone.query.filter_by(email = em).first()
         #se c'è, allora controlla anche la password (salvata criptata)
         if utente is not None and utente.check_password(pwd):
@@ -177,7 +176,7 @@ def registrazione():
 
 #per ora la commento
 @login_required
-@app.route('/profilo')
+@app.route('/profilo', methods = ['POST','GET'])
 def profilo():
 
     ruolo = ""
@@ -189,21 +188,33 @@ def profilo():
         #se voglio il telefono devo fare un'altra query
 
 
+        if 'modificavalori' in request.form and  request.form['modificavalori'] == "ModificaPermessi":
+            cf_passato = request.form['id_passato']
+            nome_radio_button = cf_passato + "_radio"
+            v = request.form[nome_radio_button]
+            print(v)
+            if v == "istruttore":
+                #query update da iscritto a istruttore dopo averla fatta levare l'isstruzione "pass"
+                pass
+            if v == "iscritto":
+                #query update da istruttore passa a iscritto dopo averla fatta levare l'isstruzione "pass"
+                pass
+
         #prendo gli id di tutti i capi
-        s = text("SELECT codice_fiscale FROM ruoli r WHERE is_capo IS TRUE AND codice_fiscale=:passed_id")
+        s = text("SELECT codice_fiscale FROM ruoli r WHERE is_capo IS TRUE AND codice_fiscale=:id_c")
         with engine.connect() as conn:
-            dati_capi = conn.execute(s,passed_id=id)
+            dati_capi = conn.execute(s,id_c=id)
             #creo una lista fatta da tutti gli id dei capi
             ids_capi=[]
             for d in dati_capi:
                ids_capi.append(d['codice_fiscale'])
-            print(ids_capi)
+            
             #se l'id è nella lista dei capi stampo tutti gli iscritti
             if id in ids_capi:
 
                 s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.cellulare FROM ruoli r JOIN persone p ON p.codice_fiscale=r.codice_fiscale JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE r.is_iscritto IS TRUE")
                 lista_iscritti = conn.execute(s)
-                print(lista_iscritti)
+                
                 return render_template("profilo.html", title="profilo", lista_persone = lista_iscritti, dati_utente = dati_utente_corrente, ruolo="capo")
     
 

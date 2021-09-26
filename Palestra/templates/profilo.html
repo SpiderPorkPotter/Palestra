@@ -56,13 +56,25 @@
 
     {% if ruolo == 'capo' %}
         <h2> lista iscritti</h2>
-        <table>
-            {% for row in lista_persone %}
-            <tr>
-                <td>{{ row['codice_fiscale'] }}</td> <td>{{ row['nome'] }}</td> <td>{{ row['cognome'] }}</td>  <td>{{ row['cellulare'] }}</td>  
-            </tr>
-            {% endfor %}
-        </table>
+        
+            <table>
+                {% for row in lista_persone %}
+                <tr>
+                    
+                    <td>{{ row['codice_fiscale'] }}</td> <td>{{ row['nome'] }}</td> <td>{{ row['cognome'] }}</td>  <td>{{ row['cellulare'] }}</td>
+                    <form action="/profilo" method="POST">
+                        <td><input type="radio" name="{{ row['codice_fiscale'] }}_radio" value="istruttore" > istruttore </td>
+                        
+                        <td><input type="radio"  name="{{ row['codice_fiscale'] }}_radio" value="iscritto"> iscritto </td>
+                        <input type="hidden"  name="id_passato" value="{{ row['codice_fiscale'] }}">
+
+                        <td><input type="submit" name="modificavalori" value="ModificaPermessi" > </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </table>
+           
+        </form>
     {% endif %}
 </div>
 
