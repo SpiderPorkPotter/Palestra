@@ -8,19 +8,19 @@
 
     <ul id="users">
         <li>
-            <!--users � l'oggetto utente. Cio� come una scatola che contiene le info della 
+            <!--dati_utente � l'oggetto utente. Cio� come una scatola che contiene le info della 
                 persona loggata nel momento corrente'-->
             <span class="field-name">Utente:</span>
-            <span class="field-value">{{ users.nome }}</span>
-            <span class="field-value">{{ users.cognome }}</span>
+            <span class="field-value">{{ dati_utente['nome'] }}</span>
+            <span class="field-value">{{ dati_utente['cognome'] }}</span>
         </li>
         <li>
             <span class="field-name">Email:</span>
-            <span class="field-value">{{ users.email }}</span>
+            <span class="field-value">{{ dati_utente['email'] }}</span>
         </li>
         <li>
             <span class="field-name">Telefono:</span>
-            <span class="field-value">{{ users.telefono }}</span>
+            <span class="field-value">{{ dati_utente['cellulare'] }}</span>
         </li>
     </ul>
     <hr />
@@ -57,9 +57,9 @@
 
     <h2> lista iscritti</h2>
     <table>
-        {%for row in lista_iscritti %}
+        {% for row in lista_persone %}
         <tr>
-            <td>{{ row['codice_fiscale'] }}</td> <td>{{ row['nome'] }}</td> <td>{{ row['nome'] }}</td>  <td>{{ row['telefono'] }}</td>  
+            <td>{{ row['codice_fiscale'] }}</td> <td>{{ row['nome'] }}</td> <td>{{ row['cognome'] }}</td>  <td>{{ row['cellulare'] }}</td>  
         </tr>
         {% endfor %}
     </table>

@@ -72,7 +72,7 @@ class Persone(UserMixin, Base, db.Model):
         return False
 
 
-class Ruoli(Persone):
+class Ruoli(Base):
     __tablename__ = 'ruoli'
 
     codice_fiscale = Column(ForeignKey('persone.codice_fiscale'), primary_key=True, index=True)

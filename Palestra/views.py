@@ -82,7 +82,8 @@ def login():
     em = form.email.data
     pwd = form.password.data
     #controlla che ci sia una sola email corrispondente
-    if form.validate_on_submit():
+    if request.method == 'POST':
+        print("arrivato")
         utente = Persone.query.filter_by(email = em).first()
         #se c'è, allora controlla anche la password (salvata criptata)
         if utente is not None and utente.check_password(pwd):
@@ -105,7 +106,8 @@ def registrazione():
     form = RegistrazioneForm()
     
 
-    if form.validate_on_submit():
+    #if form.validate_on_submit():
+    if request.method == 'POST':
         
         #prendo il contenuto del form di registrazione
         codiceFisc = form.codice_fiscale.data
@@ -121,33 +123,52 @@ def registrazione():
         citt = form.citta.data
 
         #creo l'oggetto utente
-        nuovo_utente = Persone(
-                                codice_fiscale = codiceFisc,
-                                nome = nom,
+        nuovo_utente = Persone(nome = nom,
                                 cognome = cogn,
                                 email = em ,
-                                data_iscrizione = datetime.today()
+                                data_iscrizione = datetime.today(),
+                                codice_fiscale = codiceFisc,
                                )
-        #gli inserisco una password hashata
         nuovo_utente.set_password(passwd)
-        #lo aggiungo alla sessione per le modifiche al database
+
+        info_nuovo_utente = InfoContatti(
+                    cellulare = tel,
+                    tel_fisso = telFisso,
+                    residenza = resdz,
+                    città = citt,
+                    codice_fiscale = codiceFisc)
+        ruoli_utente = Ruoli(is_iscritto = True,is_capo = False,is_istruttore = False, is_responsabile  =False, codice_fiscale = codiceFisc)
+       
         db.session.add(nuovo_utente)
+        db.session.commit()
+
+        db.session.add(info_nuovo_utente)
+        db.session.commit()
+        db.session.add(ruoli_utente)
+        db.session.commit()
+
+
+
+        #gli inserisco una password hashata
+        
+        #lo aggiungo alla sessione per le modifiche al database
+        
+       
         #con flush le modifiche dovrebbero essere inviate al db, ma non sono persistenti ancora
-        db.session.flush()
+        
 
         #creo l'oggetto dell info del contatto
-        info_nuovo_utente = InfoContatti(
-                                          cellulare = tel,
-                                          tel_fisso = telFisso,
-                                          residenza = resdz,
-                                          città = citt,
-                                          codice_fiscale = codiceFisc
-                                        )
+       
+                                        
         #faccio la stessa cosa di quello sopra
-        db.session.add(info_nuovo_utente)
+        
+        
+        
         #solo che ora faccio la commit per rendere effettive tutte le modifiche al
         #database
-        db.session.commit()
+        
+        
+        
 
         flash('Registrazione completata')
         return redirect('/login')
@@ -158,18 +179,30 @@ def registrazione():
 @login_required
 @app.route('/profilo')
 def profilo():
-    #prendo l'id dell'utente corrente
+    #prendo l'id dell'utente corrente e le sue info
     if current_user != None:
         id = Persone.get_id(current_user)
-        #vedo se è un capo
-        s = text("SELECT codice_fiscale FROM ruoli WHERE is_capo IS TRUE AND codice_fiscale=:passed_id")
+
+        dati_utente_corrente = Persone.query.filter_by(codice_fiscale = id).first()
+        #se voglio il telefono devo fare un'altra query
+
+
+        #prendo gli id di tutti i capi
+        s = text("SELECT codice_fiscale FROM ruoli r WHERE is_capo IS TRUE AND codice_fiscale=:passed_id")
         with engine.connect() as conn:
-            id_capo = conn.execute(s,passed_id=id)
-            if id == id_capo:
-                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono, FROM ruoli r JOIN persone p ON p.codice_fiscale=r.codice_fiscale JOIN info_contatti ON p.codice_fiscale=i.codice_fiscale WHERE r.is_isctritto IS TRUE")
-                with engine.connect() as conn:
-                    lista_iscritti = conn.execute(s)
-                    return render_template("profilo_html", title="profilo", lista_persone = lista_iscritti)
+            dati_capi = conn.execute(s,passed_id=id)
+            #creo una lista fatta da tutti gli id dei capi
+            ids_capi=[]
+            for d in dati_capi:
+               ids_capi.append(d['codice_fiscale'])
+            print(ids_capi)
+            #se l'id è nella lista dei capi stampo tutti gli iscritti
+            if id in ids_capi:
+
+                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.cellulare FROM ruoli r JOIN persone p ON p.codice_fiscale=r.codice_fiscale JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE r.is_iscritto IS TRUE")
+                lista_iscritti = conn.execute(s)
+                print(lista_iscritti)
+                return render_template("profilo.html", title="profilo", lista_persone = lista_iscritti, dati_utente = dati_utente_corrente)
     
 
     #queste tre righe sono di prova per vedere se effettivamente prende
@@ -183,8 +216,7 @@ def profilo():
    #dati_richiesti è la tabella con i dati che poi viene mostrata in profilo.html
     return render_template(
         'profilo.html',
-        users = Persone.query.filter_by(codice_fiscale = id).first(),
-        #dati_richiesti = db.session.execute("SELECT p.email, p.nome, p.cognome, p.is_istruttore FROM Persone as p WHERE p.codice_fiscale = :id", {"id": current_user.get_id()}).first(),
+        dati_utente = dati_utente_corrente,
         title = 'Il mio profilo'
         )
 
