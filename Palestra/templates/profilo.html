@@ -54,15 +54,16 @@
         </tbody>
     </table>
 
-
-    <h2> lista iscritti</h2>
-    <table>
-        {% for row in lista_persone %}
-        <tr>
-            <td>{{ row['codice_fiscale'] }}</td> <td>{{ row['nome'] }}</td> <td>{{ row['cognome'] }}</td>  <td>{{ row['cellulare'] }}</td>  
-        </tr>
-        {% endfor %}
-    </table>
+    {% if ruolo == 'capo' %}
+        <h2> lista iscritti</h2>
+        <table>
+            {% for row in lista_persone %}
+            <tr>
+                <td>{{ row['codice_fiscale'] }}</td> <td>{{ row['nome'] }}</td> <td>{{ row['cognome'] }}</td>  <td>{{ row['cellulare'] }}</td>  
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 </div>
 
 

@@ -179,6 +179,8 @@ def registrazione():
 @login_required
 @app.route('/profilo')
 def profilo():
+
+    ruolo = ""
     #prendo l'id dell'utente corrente e le sue info
     if current_user != None:
         id = Persone.get_id(current_user)
@@ -202,7 +204,7 @@ def profilo():
                 s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.cellulare FROM ruoli r JOIN persone p ON p.codice_fiscale=r.codice_fiscale JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE r.is_iscritto IS TRUE")
                 lista_iscritti = conn.execute(s)
                 print(lista_iscritti)
-                return render_template("profilo.html", title="profilo", lista_persone = lista_iscritti, dati_utente = dati_utente_corrente)
+                return render_template("profilo.html", title="profilo", lista_persone = lista_iscritti, dati_utente = dati_utente_corrente, ruolo="capo")
     
 
     #queste tre righe sono di prova per vedere se effettivamente prende
@@ -217,7 +219,8 @@ def profilo():
     return render_template(
         'profilo.html',
         dati_utente = dati_utente_corrente,
-        title = 'Il mio profilo'
+        title = 'Il mio profilo',
+        ruolo = "iscritto"
         )
 
 
