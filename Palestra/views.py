@@ -10,9 +10,9 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 from flask_wtf import FlaskForm, form
 from sqlalchemy.sql.elements import Null
 from sqlalchemy.sql.expression import text
-from wtforms import StringField, PasswordField, IntegerField, FormField
+from wtforms import StringField, PasswordField, IntegerField, FormField, RadioField
 from wtforms.fields.html5 import DateTimeLocalField
-from wtforms.validators import InputRequired, Email, Length
+from wtforms.validators import InputRequired, Email, Length, Optional
 from sqlalchemy import create_engine
 from Palestra import app
 from .models_finale import * 
@@ -60,7 +60,7 @@ class RegistrazioneForm(FlaskForm):
     #chk_password = PasswordField('conferma password', validators = [InputRequired(), Length(min = 8, max = 50)])
     #le opzioni di contatto 
     telefono = StringField('Telefono', validators = [InputRequired(), Length(min = 9, max = 11)])
-    telefonoFisso = StringField('Telefono fisso', validators = [Length(min = 9, max = 11)])
+    telefonoFisso = StringField('Telefono fisso', validators = [Optional(), Length(min = 9, max = 11)])
     residenza = StringField('Luogo di residenza', validators = [InputRequired()])
     citta = StringField('Città di residenza', validators = [InputRequired()])
 
@@ -327,4 +327,30 @@ def admin():
     
     return render_template("admin.html" , title='Amministrazione')
     
-   
+
+
+class CreaSalaForm(FlaskForm):
+    salaId = IntegerField('Numero sala', validators = [InputRequired(), Length(min = 1, max = 3)])
+    nPosti = IntegerField('Numero posti totali', validators = [InputRequired(), Length(min = 1, max = 3)])
+    attrezzi = RadioField('Seleziona se contiene solo attrezzi', choices=[('True','SI'),('False','NO')])
+
+
+@app.route('/crea_sala', methods=['POST', 'GET'])
+def crea_sala():
+    form = CreaSalaForm()
+
+    if request.method == 'POST':
+        idSala = form.salaId.data
+        posti = form.nPosti.data
+        attrez = form.attrezzi.data
+
+        nuova_sala = Sale(
+                            id_sala = idSala,
+                            posti_totali = posti,
+                            solo_attrezzi = attrez
+                            )
+        db.session.add(nuova_sala)
+        db.session.commit()
+        flash('Creazione completata')
+
+    return render_template("creazioneSala.html", title = "Crea una nuova sala nella tua palestra", form = form)

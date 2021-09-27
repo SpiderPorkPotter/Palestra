@@ -39,26 +39,27 @@
                     <li><a href="{{ url_for('home') }}">Home</a></li>
                     <!-- se l'utente si è autenticato, le pagine qui sotto non le può vedere
 
-                        LOGIN -> home, profilo, corsi, calendario, ?istruttori?, logout
-                        NO LOGIN -> home, login, registrazione, corsi, logout
+        LOGIN -> home, profilo, corsi, calendario, ?istruttori?, logout
+        NO LOGIN -> home, login, registrazione, corsi, logout
 
-                        temporanea, per vedere se effettivamente è loggato, poi
-                        stabiliamo meglio quali si vedono e quali no
-                    -->
+        temporanea, per vedere se effettivamente è loggato, poi
+        stabiliamo meglio quali si vedono e quali no
+    -->
                     {% if current_user.is_authenticated %}
-                        <li><a href="{{ url_for('profilo') }}">Profilo</a></li>
-                        <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
-                        <li><a href="{{ url_for('corsi') }}">Corsi</a></li>
-                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                    
+                    <li><a href="{{ url_for('profilo') }}">Profilo</a></li>
+                    <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
+                    <li><a href="{{ url_for('corsi') }}">Corsi</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+
                     {% else %}
-                        <li><a href="{{ url_for('login') }}">Login</a></li>
-                        <li><a href="{{ url_for('registrazione') }}">Registrazione</a></li>
-                        <li><a href="{{ url_for('logout') }}">Logout</a></li>   
-                        <li><a href="{{ url_for('istruttori') }}">Istruttori</a></li>
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('registrazione') }}">Registrazione</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <li><a href="{{ url_for('istruttori') }}">Istruttori</a></li>
                     {% endif %}
                     <li><a href="{{ url_for('admin') }}">admindb</a></li>
-                    
+                    <li><a href="{{ url_for('crea_sala') }}">Crea Sala</a></li>
+
                 </ul>
             </div>
         </div>
