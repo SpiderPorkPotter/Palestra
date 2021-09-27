@@ -44,6 +44,7 @@
     <Folder Include="Palestra\templates\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Palestra\templates\admin.html" />
     <Content Include="Palestra\templates\calendario.html" />
     <Content Include="Palestra\templates\corsi.html" />
     <Content Include="Palestra\templates\creazionePalestra.html" />

@@ -2,20 +2,38 @@
 
 {% block content %}
 
+<h2>{{title}}</h2>
 
 <h6> pagina per inserire il capo, è una pagina che serve a noi per semplificare l'inserimento del capo nel db </h6>
 <h1>Dati del boss:</h1>
 <form action="/admin" method="POST">
-    <input type="text" name="cf" value="" placeholder="codice fiscale" maxlength="16">
-    <input type="text" name="nome" value="" placeholder="nome" maxlength="20">
-    <input type="text" name="cognome" value="" placeholder="cognome" maxlength="20">
-    <input type="text" name="email" value="" placeholder="email" maxlength="60">
-    <input type="text" name="psw" value="" placeholder="password" maxlength="20">
-    <input type="text" name="cell" value="" placeholder="cellulare" maxlength="10">
-    <input type="text" name="citta" value="" placeholder="città" maxlength="10">
-    <input type="text" name="residenza" value="" placeholder="residenza" maxlength="10">
+    <div class="form-group">
+        <label for="Codice fiscale">Codice fiscale</label>
+        <input type="text" name="cf" value="" placeholder="codice fiscale" class="form-control" maxlength="16">
+        <br />
+        <label for="Nome">Nome</label>
+        <input type="text" name="nome" value="" placeholder="nome" class="form-control" maxlength="20">
+        <br />
+        <label for="Cognome">Cognome</label>
+        <input type="text" name="cognome" value="" placeholder="cognome" class="form-control" maxlength="20">
+        <br />
+        <label for="Email">Email</label>
+        <input type="text" name="email" value="" placeholder="email" class="form-control" maxlength="60">
+        <br />
+        <label for="Password">Password</label>
+        <input type="text" name="psw" value="" placeholder="password" class="form-control" maxlength="20">
+        <br />
+        <label for="Cellulare">Cellulare</label>
+        <input type="text" name="cell" value="" placeholder="cellulare" class="form-control" maxlength="10">
+        <br />
+        <label for="Città">Città</label>
+        <input type="text" name="citta" value="" placeholder="città" class="form-control" maxlength="10">
+        <br />
+        <label for="Residenza">Residenza</label>
+        <input type="text" name="residenza" value="" placeholder="residenza" class="form-control" maxlength="10">
+    </div>
 </br>
-<input type="submit" name="inserimentocapo" value="InserisciCapo">
+<input type="submit" name="inserimentocapo" class=" btn btn-primary" value="InserisciCapo">
 
 </form>
 

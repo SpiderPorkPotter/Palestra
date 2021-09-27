@@ -2,13 +2,17 @@
 
 {% block content %}
 
-<h3>{{ title }}</h3>
+{% if ruolo != 'capo' %}
+<h2>{{ title }}</h2>
+{% else %}
+<h2>Profilo del boss</h2>
+{% endif %}
 
 <div class="container">
 
     <ul id="users">
         <li>
-            <!--dati_utente � l'oggetto utente. Cio� come una scatola che contiene le info della 
+            <!--dati_utente � l'oggetto utente. Cio� come una scatola che contiene le info della
                 persona loggata nel momento corrente'-->
             <span class="field-name">Utente:</span>
             <span class="field-value">{{ dati_utente['nome'] }}</span>
@@ -27,6 +31,7 @@
 
     <!-- Tabella esempio in cui apparirebbero le prenotazioni attive
         del proprio profilo-->
+    {% if ruolo != 'capo' %}
     <h2>Prenotazioni attive [ESEMPIO]</h2>
     <table class="table">
         <thead>
@@ -35,7 +40,7 @@
                 <th scope="col">Nome</th>
                 <th scope="col">Cognome</th>
                 <th scope="col">istruttore</th>
-                
+
             </tr>
         </thead>
         <tbody>
@@ -53,32 +58,62 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
 
     {% if ruolo == 'capo' %}
-        <h2> lista iscritti</h2>
+    <h2> lista iscritti</h2>
+    <!--ho commentato il form che era scritto prima perché i form non possono stare nelle tr
+        Non dava problemi, perché comunque veniva renderizzato, però segnava comunque errore
+        L'ho spostato fuori dalla tabella e collegato tutti gli input usando l'id del form
+        e usando l'attributo "form" secondo quanto riportato qui:
+        https://stackoverflow.com/questions/5967564/form-inside-a-table 
         
-            <table>
-                {% for row in lista_persone %}
-                <tr>
-                    
-                    <td>{{ row['codice_fiscale'] }}</td> <td>{{ row['nome'] }}</td> <td>{{ row['cognome'] }}</td>  <td>{{ row['cellulare'] }}</td>
-                    <form action="/profilo" method="POST">
-                        <td><input type="radio" name="{{ row['codice_fiscale'] }}_radio" value="istruttore" > istruttore </td>
-                        
-                        <td><input type="radio"  name="{{ row['codice_fiscale'] }}_radio" value="iscritto"> iscritto </td>
-                        <input type="hidden"  name="id_passato" value="{{ row['codice_fiscale'] }}">
+        Non so se funziona perché non ho capito bene come viene gestito, quindi non
+        ho apportato ulteriori modifiche-->
+    <form action="/profilo" id="form_tabella" method="POST"></form>
 
-                        <td><input type="submit" name="modificavalori" value="ModificaPermessi" > </td>
-                    </form>
-                </tr>
-                {% endfor %}
-            </table>
-           
-        </form>
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Email</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Cognome</th>
+                <th scope="col">Telefono</th>
+                <th scope="col">Istruttore</th>
+                <th scope="col">Iscritto</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in lista_persone %}
+            <tr>
+                <td>{{ row['codice_fiscale'] }}</td>
+                <td>{{ row['nome'] }}</td>
+                <td>{{ row['cognome'] }}</td>
+                <td>{{ row['cellulare'] }}</td>
+
+                <!--<form action="/profilo" method="POST">-->
+                <td>
+                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella" value="istruttore"> istruttore
+                </td>
+
+                <td>
+                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella" value="iscritto"> iscritto
+                </td>
+                <td>
+                    <input type="hidden" name="id_passato" value="{{ row['codice_fiscale'] }}" form="form_tabella">
+                </td>
+                <td><input type="submit" name="modificavalori" class="btn btn-primary" form="form_tabella" value="ModificaPermessi"> </td>
+                <!--</form>-->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    </form>
     {% endif %}
 </div>
 
 
 
 
-{% endblock %}
+    {% endblock %}

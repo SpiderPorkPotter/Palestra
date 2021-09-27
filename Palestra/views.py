@@ -145,30 +145,7 @@ def registrazione():
         db.session.add(info_nuovo_utente)
         db.session.commit()
         db.session.add(ruoli_utente)
-        db.session.commit()
-
-
-
-        #gli inserisco una password hashata
-        
-        #lo aggiungo alla sessione per le modifiche al database
-        
-       
-        #con flush le modifiche dovrebbero essere inviate al db, ma non sono persistenti ancora
-        
-
-        #creo l'oggetto dell info del contatto
-       
-                                        
-        #faccio la stessa cosa di quello sopra
-        
-        
-        
-        #solo che ora faccio la commit per rendere effettive tutte le modifiche al
-        #database
-        
-        
-        
+        db.session.commit()      
 
         flash('Registrazione completata')
         return redirect('/login')
@@ -342,17 +319,12 @@ def admin():
                 conn.execute(s,codice_fiscale=cf)
                 flash("inserimento")
                 
-
-                
-            
-                
-
-                
+           
         except:
             flash("errore nell'inserimento")
             raise
             
     
-    return render_template("admin.html" , title='adminpage')
+    return render_template("admin.html" , title='Amministrazione')
     
    
