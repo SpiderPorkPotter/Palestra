@@ -21,7 +21,8 @@ from . import db
 
 #psycopg2 è il driver che si usa per comunicare col database
 
-DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
 engine = create_engine(DB_URI)
 
 #inizializza la libreria che gestisce i login
@@ -253,7 +254,7 @@ def corsi():
         # da fare query dei corsi in quella 'data'
         return render_template( 'corsi.html',title='Corsi Disponibili', data = data, livelloUtente = livello_utente)
     else: 
-        return render_template( 'corsi.html',title='Corsi Disponibili', )
+        return render_template( 'corsi.html',title='Corsi Disponibili' )
 
 
 @app.route('/istruttori')
@@ -262,7 +263,7 @@ def istruttori():
         q = text("SELECT p.nome,p.cognome,i.cellulare  FROM persone p JOIN ruoli r ON p.codice_fiscale = r.codice_fiscale JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE r.is_istruttore is TRUE")
         lista_istruttori = conn.execute(q)
     
-    return render_template('istruttori.html',title='istruttori',lista_istruttori = lista_istruttori )
+    return render_template('istruttori.html',title='Elenco istruttori',lista_istruttori = lista_istruttori )
 
 
 @app.route('/creazionePalestra')
