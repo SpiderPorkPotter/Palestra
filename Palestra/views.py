@@ -21,8 +21,8 @@ from . import db
 
 #psycopg2 è il driver che si usa per comunicare col database
 
-#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
 engine = create_engine(DB_URI)
 
 #inizializza la libreria che gestisce i login
@@ -128,6 +128,7 @@ def registrazione():
                                 email = em ,
                                 data_iscrizione = datetime.today(),
                                 codice_fiscale = codiceFisc,
+                                ruolo = 3  # RUOLI :  adminDB=0, capo=1, istruttore=2, iscritto=3 
                                )
         nuovo_utente.set_password(passwd)
 
@@ -136,16 +137,17 @@ def registrazione():
                     tel_fisso = telFisso,
                     residenza = resdz,
                     città = citt,
-                    codice_fiscale = codiceFisc)
-        ruoli_utente = Ruoli(is_iscritto = True,is_capo = False,is_istruttore = False, is_responsabile  =False, codice_fiscale = codiceFisc)
+                    codice_fiscale = codiceFisc
+                    )
+
+        
        
         db.session.add(nuovo_utente)
         db.session.commit()
 
         db.session.add(info_nuovo_utente)
         db.session.commit()
-        db.session.add(ruoli_utente)
-        db.session.commit()      
+           
 
         flash('Registrazione completata')
         return redirect('/login')
@@ -179,7 +181,7 @@ def profilo():
                 pass
 
         #prendo gli id di tutti i capi
-        s = text("SELECT codice_fiscale FROM ruoli r WHERE is_capo IS TRUE AND codice_fiscale=:id_c")
+        s = text("SELECT codice_fiscale FROM persone  WHERE ruolo=1 AND codice_fiscale=:id_c")
         with engine.connect() as conn:
             dati_capi = conn.execute(s,id_c=id)
             #creo una lista fatta da tutti gli id dei capi
@@ -190,7 +192,7 @@ def profilo():
             #se l'id è nella lista dei capi stampo tutti gli iscritti
             if id in ids_capi:
 
-                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.cellulare FROM ruoli r JOIN persone p ON p.codice_fiscale=r.codice_fiscale JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE r.is_iscritto IS TRUE OR r.is_istruttore IS TRUE ")
+                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.cellulare FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=3 OR p.ruolo=2 ")
                 lista_persone = conn.execute(s)
                 
                 return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo="capo")
@@ -237,7 +239,7 @@ def corsi():
 @app.route('/istruttori')
 def istruttori():
     with engine.connect() as conn:
-        q = text("SELECT p.nome,p.cognome,i.cellulare  FROM persone p JOIN ruoli r ON p.codice_fiscale = r.codice_fiscale JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE r.is_istruttore is TRUE")
+        q = text("SELECT p.nome,p.cognome,i.cellulare  FROM persone p  JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=2")
         lista_istruttori = conn.execute(q)
     
     return render_template('istruttori.html',title='Elenco istruttori',lista_istruttori = lista_istruttori )
@@ -311,12 +313,11 @@ def admin():
             #inserisco i dati
         try:
             with engine.connect() as conn:
-                s = text("INSERT INTO persone(codice_fiscale,nome,cognome,email,data_iscrizione,password) VALUES (:codice_fiscale, :nome, :cognome, :email, :data_iscrizione, :password)")
+                s = text("INSERT INTO persone(codice_fiscale,nome,cognome,email,data_iscrizione,password,ruolo) VALUES (:codice_fiscale, :nome, :cognome, :email, :data_iscrizione, :password,1)")
                 conn.execute(s,codice_fiscale=cf, nome=nome, cognome=cognome,email=email, data_iscrizione = datetime.today(),password=generate_password_hash(pwd, method = 'sha256', salt_length = 8) )
                 s = text("INSERT INTO info_contatti(codice_fiscale,cellulare,città,residenza) VALUES (:codice_fiscale,:cellulare, :citta,:residenza)")
                 conn.execute(s,codice_fiscale=cf,cellulare=cell, citta = citta , residenza = residenza)
-                s = text("INSERT INTO ruoli(codice_fiscale,is_capo,is_iscritto,is_istruttore,is_responsabile) VALUES (:codice_fiscale,True,False,False,False)")
-                conn.execute(s,codice_fiscale=cf)
+               
                 flash("inserimento")
                 
            

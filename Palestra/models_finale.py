@@ -33,6 +33,7 @@ class Persone(UserMixin, Base, db.Model):
     data_iscrizione = Column(Date, nullable=False)
     email = Column(String(50), nullable=False)
     password = Column(String(80), nullable=False)
+    ruolo = Column(Integer, primary_key=True)
 
     #############
     #__repr__ restituisce un array associativo contentente i valori qui sotto elencati, vedi link per chiarimenti
@@ -46,6 +47,7 @@ class Persone(UserMixin, Base, db.Model):
                             telefono = self.telefono,
                             email = self.email,
                             password = self.password,
+                            ruolo = self.ruolo
                           )
 
     #converte la password da normale ad "hashata"
@@ -62,6 +64,9 @@ class Persone(UserMixin, Base, db.Model):
 
     def get_id(self):
         return self.codice_fiscale
+    
+    def get_role(self):
+        return self.ruolo
 
     def is_authenticated(self):
         """Ritorna true se l'utente è autenticato"""
@@ -71,15 +76,6 @@ class Persone(UserMixin, Base, db.Model):
         """Ritorna falso, perché gli utenti anonimi non sono supportati"""
         return False
 
-
-class Ruoli(Base):
-    __tablename__ = 'ruoli'
-
-    codice_fiscale = Column(ForeignKey('persone.codice_fiscale'), primary_key=True, index=True)
-    is_istruttore = Column(Boolean, nullable=False)
-    is_responsabile = Column(Boolean, nullable=False)
-    is_capo = Column(Boolean, nullable=False)
-    is_iscritto = Column(Boolean, nullable=False)
 
 
 class Sale(Base):
