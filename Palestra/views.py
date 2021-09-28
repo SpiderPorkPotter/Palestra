@@ -342,7 +342,7 @@ def crea_sala():
     if request.method == 'POST':
         idSala = form.salaId.data
         posti = form.nPosti.data
-        attrez = form.attrezzi.data
+        attrez = eval(form.attrezzi.data)
 
         nuova_sala = Sale(
                             id_sala = idSala,
