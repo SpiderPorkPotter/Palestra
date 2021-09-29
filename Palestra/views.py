@@ -337,22 +337,26 @@ def admin():
 
 
 class CreaSalaForm(FlaskForm):
-    salaId = IntegerField('Numero sala', validators = [InputRequired(), Length(min = 1, max = 3)])
+   
     nPosti = IntegerField('Numero posti totali', validators = [InputRequired(), Length(min = 1, max = 3)])
     attrezzi = RadioField('Seleziona se contiene solo attrezzi', choices=[('True','SI'),('False','NO')])
 
 
 @app.route('/crea_sala', methods=['POST', 'GET'])
 def crea_sala():
-    form = CreaSalaForm()
 
-    if request.method == 'POST':
-        idSala = form.salaId.data
+    if  "Submit" not in request.form :
+        id_next_sala = creaIDsala()
+   
+    form = CreaSalaForm()
+    
+    if request.method == 'POST' and request.form['Submit'] == "Invia":
+        id_next_sala = creaIDsala()
         posti = form.nPosti.data
         attrez = eval(form.attrezzi.data)
 
         nuova_sala = Sale(
-                            id_sala = idSala,
+                            id_sala = id_next_sala,
                             posti_totali = posti,
                             solo_attrezzi = attrez
                             )
@@ -360,4 +364,20 @@ def crea_sala():
         db.session.commit()
         flash('Creazione completata')
 
-    return render_template("creazioneSala.html", title = "Crea una nuova sala nella tua palestra", form = form)
+    return render_template("creazioneSala.html", title = "Crea una nuova sala nella tua palestra", form = form, id_sala = id_next_sala)
+
+
+
+
+#-------------------UTILI--------------
+
+def creaIDsala():
+    with engine.connect() as conn:
+        s = "SELECT COUNT(id_sala) AS num_sala FROM SALE "
+        res = conn.execute(s)
+        for row in res:
+            num_sala = row['num_sala']
+            break
+
+        next_id = int(num_sala) + 1
+        return next_id

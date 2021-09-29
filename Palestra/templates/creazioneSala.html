@@ -4,10 +4,10 @@
 
 <h2>{{title}}</h2>
 <!--questa  poi da inserire in quelle visibili solo dal boss-->
+ID SALA :{{ id_sala}}
 <form action="{{url_for('crea_sala')}}" method = "POST">
     <div class="form-group">
-        {{ form.salaId.label }}:
-        {{ form.salaId(class_="form-control") }}
+        
         <br />
         {{ form.nPosti.label }}:
         {{ form.nPosti(class_="form-control") }}
@@ -16,7 +16,7 @@
         {{ form.attrezzi(class_="form-control") }}
         <br />
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <input type="submit" class="btn btn-primary" name="Submit" value="Invia">
 </form>
 
 {% endblock %}
