@@ -192,7 +192,7 @@ def profilo():
             #se l'id è nella lista dei capi stampo tutti gli iscritti
             if id in ids_capi:
 
-                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.cellulare FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=3 OR p.ruolo=2 ")
+                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.cellulare , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=3 OR p.ruolo=2 ")
                 lista_persone = conn.execute(s)
                 
                 return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo="capo")

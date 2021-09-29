@@ -93,11 +93,13 @@
 
                 <!--<form action="/profilo" method="POST">-->
                 <td>
-                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella" value="istruttore"> istruttore
+                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella" value="istruttore" 
+                    {% if row['ruolo']== 2 %} checked {% endif %}> istruttore
                 </td>
 
                 <td>
-                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella" value="iscritto"> iscritto
+                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella"
+                    {% if row['ruolo']== 3 %} checked {% endif %} value="iscritto"> iscritto
                 </td>
                 <td>
                     <input type="hidden" name="id_passato" value="{{ row['codice_fiscale'] }}" form="form_tabella">
