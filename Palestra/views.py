@@ -174,11 +174,17 @@ def profilo():
             v = request.form[nome_radio_button]
             print(v)
             if v == "istruttore":
+                with engine.connect() as conn:
+                    s = text("UPDATE persone SET ruolo = 2 WHERE codice_fiscale = :cf")
+                    conn.execute(s,cf=cf_passato)
                 #query update da iscritto a istruttore dopo averla fatta levare l'isstruzione "pass"
-                pass
+               
             if v == "iscritto":
+                with engine.connect() as conn:
+                    s = text("UPDATE persone SET ruolo = 3 WHERE codice_fiscale = :cf")
+                    conn.execute(s,cf=cf_passato)
                 #query update da istruttore passa a iscritto dopo averla fatta levare l'isstruzione "pass"
-                pass
+                
 
         #prendo gli id di tutti i capi
         s = text("SELECT codice_fiscale FROM persone  WHERE ruolo=1 AND codice_fiscale=:id_c")
