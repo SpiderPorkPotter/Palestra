@@ -51,11 +51,16 @@
             inp.setAttribute("name",nome)
             var table = document.getElementById('t1')
 
-            var tr = document.createElement('tr'); 
+            var tr = document.createElement('tr');
+
+           
+            var td_label = document.createElement('td')
+            td_label.innerHTML = nome
+            
+
             var td = document.createElement('td')
-
-
-            table.appendChild(tr.appendChild(td.innerHTML(nome).appendChild(inp)))
+            table.appendChild(tr.appendChild(td_label))
+            table.appendChild(tr.appendChild(td.appendChild(inp)))
 
             
         })
