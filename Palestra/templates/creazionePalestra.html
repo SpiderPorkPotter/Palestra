@@ -3,71 +3,85 @@
 {% block content %}
 
 <h1>Crea la tua palestra</h1>
-<form>
+<form action="/creazionePalestra"  method="POST">
     <h3>Informazioni della palestra :</h3>
     <label for="nomePalestra">Nome</label>
     <input type="text" id="nomePalestra"  name="nomePalestra" placeholder="Nome Palestra" required>
 
     <label for="indirizzoPalestra">Indirizzo</label>
     <input type="text" id="indirizzoPalestra"  name="indirizzoPalestra" placeholder="Indirizzo" required>
-</form>
+
 
 
 
 <h3>Inserire le fascie orarie dei relativi giorni della settimana:</h3>
-
-
-<h4>lunedi</h4>
-<table id="t1">
-    <tr><td>    <button id="btn_aggiungi">Aggiungi Fascia</button> </td></tr>
-  
-   
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
 <script>
-
-
-
-    
-        var b = document.getElementById("btn_aggiungi")
-        i=0
+    function crea(nomeGiorno){
+        var b = document.getElementById("btn_aggiungi_"+ nomeGiorno)
+        var i=0
         b.addEventListener("click", function(){
             i++;
             var inp = document.createElement("input")
             inp.setAttribute("type","time")
-            var nome = "fascia"+ i
-            inp.setAttribute("name",nome)
-            var table = document.getElementById('t1')
-
+            var nome_input_ora = "fascia_"+ i + "_" + nomeGiorno
+            inp.setAttribute("name",nome_input_ora)
+           
+            var table = document.getElementById('table_'+ nomeGiorno)
             var tr = document.createElement('tr');
 
-           
             var td_label = document.createElement('td')
-            td_label.innerHTML = nome
-            
-
-            var td = document.createElement('td')
+            td_label.innerHTML = "Fascia" + i
+            var td_ora = document.createElement('td')
+            console.log(inp.getAttribute("name"))
             table.appendChild(tr.appendChild(td_label))
-            table.appendChild(tr.appendChild(td.appendChild(inp)))
-
-            
+            table.appendChild(tr.appendChild(td_ora.appendChild(inp)))
         })
-    
-   
-
-
+    }
 </script>
+
+<h4>Lunedì</h4>
+<table id="table_lun">
+    <tr><td>    <input type="button" id="btn_aggiungi_lun" value="Aggiungi Fascia"></input> </td></tr>
+</table>
+<script > crea("lun") </script>
+
+<h4>Martedì</h4>
+<table id="table_mar">
+    <tr><td>    <input type="button" id="btn_aggiungi_mar" value="Aggiungi Fascia"></input> </td></tr>
+</table>
+<script > crea("mar") </script>
+
+<h4>Mercoledì</h4>
+<table id="table_mer">
+    <tr><td>    <input type="button" id="btn_aggiungi_mer" value="Aggiungi Fascia"></input> </td></tr>
+</table>
+<script > crea("mer") </script>
+
+<h4>Giovedì</h4>
+<table id="table_gio">
+    <tr><td>    <input type="button" id="btn_aggiungi_gio" value="Aggiungi Fascia"></input> </td></tr>
+</table>
+<script > crea("gio") </script>
+
+<h4>Venerdì</h4>
+<table id="table_ven">
+    <tr><td>    <input type="button" id="btn_aggiungi_ven" value="Aggiungi Fascia"></input> </td></tr>
+</table>
+<script > crea("ven") </script>
+<h4>Sabato</h4>
+<table id="table_sab">
+    <tr><td>    <input type="button" id="btn_aggiungi_sab" value="Aggiungi Fascia"></input> </td></tr>
+</table>
+<script > crea("sab") </script>
+
+<h4>Domenica</h4>
+<table id="table_dom">
+    <tr><td>    <input type="button" id="btn_aggiungi_dom" value="Aggiungi Fascia"></input> </td></tr>
+</table>
+<script > crea("dom") </script>
+
+<input type="submit" name="inviaFasce" value="Salva">
+
+</form>
 
 {% endblock %}
