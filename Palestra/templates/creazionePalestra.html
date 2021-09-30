@@ -21,20 +21,31 @@
         var i=0
         b.addEventListener("click", function(){
             i++;
-            var inp = document.createElement("input")
-            inp.setAttribute("type","time")
-            var nome_input_ora = "fascia_"+ i + "_" + nomeGiorno
-            inp.setAttribute("name",nome_input_ora)
+
+            var inp_ora_inizio = document.createElement("input")
+            inp_ora_inizio.setAttribute("type","time")
+            var nome_input_ora_inizio = "inizio_fascia_"+ i + "_" + nomeGiorno
+            inp_ora_inizio.setAttribute("name",nome_input_ora_inizio)
+
+            var inp_ora_fine = document.createElement("input")
+            inp_ora_fine.setAttribute("type","time")
+            var nome_input_ora_fine = "fine_fascia_"+ i + "_" + nomeGiorno
+            inp_ora_fine.setAttribute("name",nome_input_ora_fine)
            
             var table = document.getElementById('table_'+ nomeGiorno)
             var tr = document.createElement('tr');
 
             var td_label = document.createElement('td')
-            td_label.innerHTML = "Fascia" + i
-            var td_ora = document.createElement('td')
-            console.log(inp.getAttribute("name"))
+                td_label.innerHTML = "Fascia" + i;
             table.appendChild(tr.appendChild(td_label))
-            table.appendChild(tr.appendChild(td_ora.appendChild(inp)))
+
+            var td_ora_inizio = document.createElement('td')
+            var td_ora_fine = document.createElement('td')
+            
+            table.appendChild(tr.appendChild(td_ora_inizio.appendChild(inp_ora_inizio)))
+            table.appendChild(tr.appendChild(td_ora_fine.appendChild(inp_ora_fine)))
+            console.log(inp_ora_inizio.getAttribute("name"))
+            console.log(inp_ora_fine.getAttribute("name"))
         })
     }
 </script>
