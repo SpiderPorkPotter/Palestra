@@ -5,7 +5,16 @@
 <h3>{{ title }}</h3>
 
 
-LISTA DI CORSI OFFERTI DALLA PALESTRA CON RELATIVE INFO
 
+{% if ruolo_utente == 2 %}
+<h2> inserisci informazioni sul corso in data: {{data}}</h2>
+<form>
+    Nome corso : 
+    <input type="text" name="nomeCorso">
+    <input type="text" name="sale">
+    
+
+
+</form>
 
 {% endblock %}

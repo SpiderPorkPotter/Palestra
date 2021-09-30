@@ -230,14 +230,22 @@ def logout():
 
 @app.route('/corsi', methods = ['POST', 'GET'])
 def corsi():
+    
+    data = request.form['dataSelezionata']
+
     if request.method == 'POST':
-        data = request.form['dataSelezionata']
-        #livelloUtente è il livello dell'utente (da fare) come prova ho messo 2
-        livello_utente = 2
+        if current_user != None:
+            ruolo_utente = Persone.get_role(current_user)
+            if ruolo_utente == 2: # istruttore
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente)
+                
+       
+       
         
         # SE VOGLIO USARE GET USO QUESTA SINTASSI : data = request.args.get('dataSelezionata', '')
         # da fare query dei corsi in quella 'data'
-        return render_template( 'corsi.html',title='Corsi Disponibili', data = data, livelloUtente = livello_utente)
+        ruolo_utente =100   # da levare
+        return render_template( 'corsi.html',title='Corsi Disponibili', data = data, livelloUtente = ruolo_utente)
     else: 
         return render_template( 'corsi.html',title='Corsi Disponibili' )
 
@@ -253,16 +261,21 @@ def istruttori():
 
 @app.route('/creazionePalestra')
 def creazionePalestra():
+    nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
     """pagina della creazione della palestra"""
     return render_template(
         'creazionePalestra.html',
-        title='Crea La Palestra'
+        title='Crea La Palestra',
+       lista_giorni= nome_giorni_della_settimana
     )
 
 
 @app.route('/calendario', methods=['POST', 'GET'])
 def calendario():
     #calendario
+    if current_user != None:
+        ruolo = Persone.get_role(current_user)
+        
     
     mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
     nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
@@ -296,7 +309,8 @@ def calendario():
     return render_template('calendario.html',title='calendario', 
     meseNumerico=mese, num_giorni=num_giorni, nomeMese=mesi[mese-1],annoNumerico = anno,
     dataCorrente = data_corrente,primo_giorno_nome = primo_giorno_nome, nome_giorni_settimana=nome_giorni_della_settimana,
-    indice_settimana_del_primo_giorno = primo_giorno_indice)
+    indice_settimana_del_primo_giorno = primo_giorno_indice,
+    ruolo = ruolo)
 
 
 @app.route('/admin', methods=['POST', 'GET'])
@@ -344,12 +358,12 @@ class CreaSalaForm(FlaskForm):
 
 @app.route('/crea_sala', methods=['POST', 'GET'])
 def crea_sala():
-
+   
     if  "Submit" not in request.form :
         id_next_sala = creaIDsala()
    
     form = CreaSalaForm()
-    
+
     if request.method == 'POST' and request.form['Submit'] == "Invia":
         id_next_sala = creaIDsala()
         posti = form.nPosti.data
@@ -363,6 +377,8 @@ def crea_sala():
         db.session.add(nuova_sala)
         db.session.commit()
         flash('Creazione completata')
+
+    
 
     return render_template("creazioneSala.html", title = "Crea una nuova sala nella tua palestra", form = form, id_sala = id_next_sala)
 
