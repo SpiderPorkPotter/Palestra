@@ -18,6 +18,8 @@ from Palestra import app
 from .models_finale import * 
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
+import re
+import numpy
 
 #psycopg2 è il driver che si usa per comunicare col database
 
@@ -259,14 +261,40 @@ def istruttori():
     return render_template('istruttori.html',title='Elenco istruttori',lista_istruttori = lista_istruttori )
 
 
-@app.route('/creazionePalestra')
+@app.route('/creazionePalestra',methods=['POST', 'GET'])
 def creazionePalestra():
-    nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
+   # nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
     """pagina della creazione della palestra"""
+
+    if "inviaFasce" in request.form:
+        #CONVERTIRE DA MULTI DICT IN LIST
+        copia_POST_array = numpy.array(list(request.form))
+        for i in range(len(copia_POST_array)-1):
+            
+            if re.match("[1-7]_inizioFascia_[1-9]", str(copia_POST_array[i]) ) and re.match("[1-7]_fineFascia_[1-9]", str(copia_POST_array[i+1]) ) :
+
+                s_fasciaInizio = str(copia_POST_array[i])
+                s_fasciaFine = str(copia_POST_array[i+1])
+               
+                args_fascia_inizio = s_fasciaInizio.split('_')
+                args_fascia_fine = s_fasciaFine.split('_')
+                intGiorno = args_fascia_inizio[0]
+                numFascia = args_fascia_inizio[2]
+
+                ora_inizio = request.form[intGiorno + "_" + args_fascia_inizio[1] + "_" + numFascia]
+                ora_fine =  request.form[intGiorno + "_" + args_fascia_fine[1] + "_" + numFascia]
+                print(ora_inizio)
+                print(ora_fine)
+                
+                with engine.connect() as conn:    
+                s = text("INSERT INTO Fascia_oraria(id_fascia, giorno, inizio, fine) VALUES (:id, :g, :ora_i, :ora_f)" )
+                conn.execute(s,id=numFascia, g =intGiorno, ora_i=ora_inizio, ora_f= ora_fine )
+            
+
     return render_template(
         'creazionePalestra.html',
         title='Crea La Palestra',
-       lista_giorni= nome_giorni_della_settimana
+       
     )
 
 
