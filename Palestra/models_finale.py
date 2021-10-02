@@ -20,6 +20,7 @@ class FasciaOraria(Base):
     __tablename__ = 'fascia_oraria'
 
     id_fascia = Column(Integer, primary_key=True)
+    giorno = Column(Integer, primary_key=True)
     inizio = Column(Time, nullable=False)
     fine = Column(Time, nullable=False)
 
@@ -101,14 +102,6 @@ class Corsi(Base):
     sale = relationship('Sale')
 
 
-class GiorniSettimana(Base):
-    __tablename__ = 'giorni_settimana'
-
-    giorno = Column(Integer, primary_key=True, nullable=False)
-    id_fascia = Column(ForeignKey('fascia_oraria.id_fascia'), primary_key=True, nullable=False, index=True)
-    mese = Column(Integer, nullable=False)
-
-    fascia_oraria = relationship('FasciaOraria')
 
 
 class InfoContatti(Base):

@@ -287,8 +287,8 @@ def creazionePalestra():
                 print(ora_fine)
                 
                 with engine.connect() as conn:    
-                s = text("INSERT INTO Fascia_oraria(id_fascia, giorno, inizio, fine) VALUES (:id, :g, :ora_i, :ora_f)" )
-                conn.execute(s,id=numFascia, g =intGiorno, ora_i=ora_inizio, ora_f= ora_fine )
+                    s = text("INSERT INTO Fascia_oraria(id_fascia, giorno, inizio, fine) VALUES (:id, :g, :ora_i, :ora_f)" )
+                    conn.execute(s,id=numFascia, g =intGiorno, ora_i=ora_inizio, ora_f= ora_fine )
             
 
     return render_template(
