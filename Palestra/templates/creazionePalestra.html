@@ -95,4 +95,27 @@
 
 </form>
 
+
+
+
+{% if tab_fasce != Null %}
+<br>
+<br>
+    Fasce gia inserite : 
+    <br>
+    <table> 
+        <th>Giorno</th><th>Fascia</th><th>Dalle</th><th>Alle</th>
+    {% for row in tab_fasce %}
+    <tr>
+        <td> {{ nome_giorni_della_settimana[row['giorno']-1] }} </td> 
+        <td> {{ row['id_fascia']  }} </td>
+        <td> {{ row['inizio'] }}  </td> 
+        <td> {{ row['fine'] }}  </td>
+    </tr>
+    {% endfor  %}
+    </table>
+{% endif %}
+
+
+
 {% endblock %}

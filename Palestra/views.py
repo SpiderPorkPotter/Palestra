@@ -263,7 +263,7 @@ def istruttori():
 
 @app.route('/creazionePalestra',methods=['POST', 'GET'])
 def creazionePalestra():
-   # nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
+    nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
     """pagina della creazione della palestra"""
 
     if "inviaFasce" in request.form:
@@ -289,13 +289,12 @@ def creazionePalestra():
                 with engine.connect() as conn:    
                     s = text("INSERT INTO Fascia_oraria(id_fascia, giorno, inizio, fine) VALUES (:id, :g, :ora_i, :ora_f)" )
                     conn.execute(s,id=numFascia, g =intGiorno, ora_i=ora_inizio, ora_f= ora_fine )
-            
-
-    return render_template(
-        'creazionePalestra.html',
-        title='Crea La Palestra',
-       
-    )
+     #mostrare le fasce gia aggiunte:
+    with engine.connect() as conn:    
+            s = text("SELECT * FROM Fascia_oraria  ORDER BY id_fascia, giorno " )
+            tab_fasce = conn.execute(s)        
+           
+    return render_template('creazionePalestra.html',title='Crea La Palestra',tab_fasce = tab_fasce,nome_giorni_della_settimana = nome_giorni_della_settimana)
 
 
 @app.route('/calendario', methods=['POST', 'GET'])
