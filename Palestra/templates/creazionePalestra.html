@@ -16,6 +16,27 @@
 
 <h3>Inserire le fascie orarie dei relativi giorni della settimana:</h3>
 <script>
+
+function check_all_ok(){   
+   
+    var  inputs =  document.querySelectorAll("input[type='time']")
+    var is_not_ok = false
+    console.log(inputs)
+    id_submit = document.getElementById('inviaFascie')
+    
+    for(var i = 0; i < inputs.length; i++  ){
+        if( inputs[i].getAttribute('title') == "" ){
+            $( inputs[i]).removeAttr('title')
+            $(inputs[i]).tooltip('disable')
+            is_not_ok = true
+            break
+        }
+    }
+    document.getElementById("inviaFasce").disabled = is_not_ok
+    return
+}
+
+
     function crea(intGiorno){
         var b = document.getElementById("btn_aggiungi_"+ intGiorno)
         var i=0
@@ -31,6 +52,28 @@
             inp_ora_fine.setAttribute("type","time")
             var nome_input_ora_fine =  intGiorno + "_fineFascia_"+ i 
             inp_ora_fine.setAttribute("name",nome_input_ora_fine)
+           
+            inp_ora_fine.addEventListener("change",function(){
+                if (this.value != undefined && inp_ora_inizio.value > this.value){
+                    $(inp_ora_fine).tooltip({title:"ora finale non valida"})
+                    $(inp_ora_fine).tooltip('show')
+                    
+                }
+                check_all_ok()
+                return
+            })
+            inp_ora_inizio.addEventListener("change",function(){
+                if (this.value != undefined && inp_ora_fine.value < this.value){
+                    $(inp_ora_inizio).tooltip({title:"ora iniziale non valida"})
+                    $(inp_ora_inizio).tooltip('show')
+                    
+                }
+                check_all_ok()
+                return
+            })
+
+
+
            
             var table = document.getElementById('table_'+intGiorno)
             var tr = document.createElement('tr');
@@ -48,6 +91,9 @@
             console.log(inp_ora_fine.getAttribute("name"))
         })
     }
+
+
+
 </script>
 
 <h4>Lunedì</h4>
@@ -91,7 +137,8 @@
 </table>
 <script > crea("7") </script>
 
-<input type="submit" name="inviaFasce" value="Salva">
+<input id="inviaFasce" type="submit" name="inviaFasce" value="Salva">
+
 
 </form>
 
