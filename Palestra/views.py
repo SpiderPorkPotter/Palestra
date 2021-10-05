@@ -21,6 +21,7 @@ from . import db
 import re
 import numpy
 
+nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
 #psycopg2 è il driver che si usa per comunicare col database
 
 DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
@@ -238,8 +239,14 @@ def corsi():
     if request.method == 'POST':
         if current_user != None:
             ruolo_utente = Persone.get_role(current_user)
-            if ruolo_utente == 2: # istruttore
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente)
+            #if ruolo_utente == 2: # istruttore
+            s = text("SELECT id_sala FROM corsi c JOIN sale s ON c.id_sala=s.id_sala")
+           
+            data = data[2 : len(data) : ]
+            intGiorno_settimana = [int(datetime.strptime(data,"%y %m %d").weekday())]
+            fasce = text("SELECT * FROM fascia_oraria WHERE giorno=:g ")
+           #da finire
+            return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente)
                 
        
        
@@ -263,7 +270,7 @@ def istruttori():
 
 @app.route('/creazionePalestra',methods=['POST', 'GET'])
 def creazionePalestra():
-    nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
+    
     """pagina della creazione della palestra"""
 
     if "inviaFasce" in request.form:
