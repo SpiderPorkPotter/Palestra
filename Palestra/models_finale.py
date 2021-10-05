@@ -85,7 +85,7 @@ class Sale(Base):
     id_sala = Column(Integer, primary_key=True)
     posti_totali = Column(Integer, nullable=False)
     solo_attrezzi = Column(Boolean, nullable=False)
-
+    corsi = relationship('Corsi', secondary='sale_corsi')
 
 class Corsi(Base):
     __tablename__ = 'corsi'
@@ -93,13 +93,14 @@ class Corsi(Base):
     nome_corso = Column(String(50), nullable=False)
     max_partecipanti = Column(Integer, nullable=False)
     id_fascia = Column(ForeignKey('fascia_oraria.id_fascia'), nullable=False, index=True)
-    id_sala = Column(ForeignKey('sale.id_sala'), nullable=False, index=True)
+    
     codice_fiscale = Column(ForeignKey('persone.codice_fiscale'), nullable=False, index=True)
     id_corso = Column(Integer, primary_key=True)
 
     persone = relationship('Persone')
     fascia_oraria = relationship('FasciaOraria')
-    sale = relationship('Sale')
+   
+    sale = relationship('Sale', secondary='sale_corsi')
 
 
 
@@ -142,3 +143,12 @@ class Prenotazioni(Base):
     corsi = relationship('Corsi')
     fascia_oraria = relationship('FasciaOraria')
     sale = relationship('Sale')
+
+
+class Sale_corsi(Base):
+    __tablename__ = 'sale_corsi'
+
+    data = Column(Date, nullable=False, primary_key=True)
+    id_sala = Column(Integer,ForeignKey('sale.id_sala'), nullable=False, index=True,primary_key=True)
+    id_corso = Column(Integer ,ForeignKey('corsi.id_corso'), nullable=False, index=True, primary_key=True)
+    
