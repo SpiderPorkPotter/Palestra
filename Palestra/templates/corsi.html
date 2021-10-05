@@ -12,9 +12,12 @@
     Nome corso : 
     <input type="text" name="nomeCorso">
     <input type="text" name="sale">
-    
+    <br>
+    {% for row in fasce %}
+        Fascia {{row['id_fascia']}} dalle {{row['inizio']}} alle {{row['fine']}}
+        <br>
 
-
+    {% endfor %}
 </form>
 {% endif %}
 {% endblock %}

@@ -239,14 +239,17 @@ def corsi():
     if request.method == 'POST':
         if current_user != None:
             ruolo_utente = Persone.get_role(current_user)
-            #if ruolo_utente == 2: # istruttore
-            s = text("SELECT id_sala FROM corsi c JOIN sale s ON c.id_sala=s.id_sala")
-           
-            data = data[2 : len(data) : ]
-            intGiorno_settimana = [int(datetime.strptime(data,"%y %m %d").weekday())]
-            fasce = text("SELECT * FROM fascia_oraria WHERE giorno=:g ")
-           #da finire
-            return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente)
+            if ruolo_utente == 2: # istruttore
+                s = text("SELECT id_sala FROM corsi c JOIN sale s ON c.id_sala=s.id_sala")
+            
+                data = data[2 : len(data) : ]
+                intGiorno_settimana = int(datetime.strptime(data,"%y %m %d").weekday())+1
+                print(intGiorno_settimana)
+                s = text("SELECT * FROM fascia_oraria WHERE giorno=:g ")
+                with engine.connect() as conn:
+                    fasce = conn.execute(s,g=intGiorno_settimana)
+            
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, fasce = fasce)
                 
        
        
