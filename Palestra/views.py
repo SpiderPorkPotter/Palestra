@@ -201,7 +201,7 @@ def profilo():
             #se l'id è nella lista dei capi stampo tutti gli iscritti
             if id in ids_capi:
 
-                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.cellulare , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=3 OR p.ruolo=2 ")
+                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=3 OR p.ruolo=2 ")
                 lista_persone = conn.execute(s)
                 
                 return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo="capo")
@@ -235,24 +235,30 @@ def logout():
 def corsi():
     
     data = request.form['dataSelezionata']
-
-    if request.method == 'POST':
-        if current_user != None:
-            ruolo_utente = Persone.get_role(current_user)
-            if ruolo_utente == 2: # istruttore
-                s = text("SELECT id_sala FROM corsi c JOIN sale s ON c.id_sala=s.id_sala")
-            
-                data = data[2 : len(data) : ]
-                intGiorno_settimana = int(datetime.strptime(data,"%y %m %d").weekday())+1
-                print(intGiorno_settimana)
-                s = text("SELECT * FROM fascia_oraria WHERE giorno=:g ")
-                with engine.connect() as conn:
-                    fasce = conn.execute(s,g=intGiorno_settimana)
-            
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, fasce = fasce)
+    tmp_data = data[2 : len(data) : ]
+    data_for_DB = datetime.strptime(tmp_data,"%y %m %d")
+    is_ricerca_setted = request.method == 'POST' and "ricerca" in request.form and request.form['ricerca'] == "Cerca"
+    
+    if "dataSelezionata" in request.form:
+        if is_ricerca_setted :
+            if current_user != None and "ora_iniziale_ricerca" in request.form and "ora_finale_ricerca" in request.form:
+                ruolo_utente = Persone.get_role(current_user)
+                    #if ruolo_utente == 2: # istruttore
                 
-       
-       
+                sale_disponibili = text("SELECT * FROM sale_corsi sc JOIN fascia_oraria fo ON fo.id_fascia = sc.id_fascia WHERE data =:dataDB AND :ora_inizio <= fo.inizio AND :ora_fine >= fo.fine   ")
+            
+                #intGiorno_settimana = int(datetime.strptime(data,"%y %m %d").weekday())+1
+                input_ora_inizio = request.form['ora_iniziale_ricerca']
+                input_ora_fine = request.form['ora_finale_ricerca']
+                #s = text("SELECT * FROM fascia_oraria WHERE giorno=:g ")
+                with engine.connect() as conn:
+                    sale_disp = conn.execute(sale_disponibili,dataDB=data_for_DB,ora_inizio=input_ora_inizio,ora_fine=input_ora_fine, dataSelezionata = data)
+            
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp =sale_disp)
+        else:
+            render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
+        
+        
         
         # SE VOGLIO USARE GET USO QUESTA SINTASSI : data = request.args.get('dataSelezionata', '')
         # da fare query dei corsi in quella 'data'
@@ -265,7 +271,7 @@ def corsi():
 @app.route('/istruttori')
 def istruttori():
     with engine.connect() as conn:
-        q = text("SELECT p.nome,p.cognome,i.cellulare  FROM persone p  JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=2")
+        q = text("SELECT p.nome,p.cognome,i.telefono  FROM persone p  JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=2")
         lista_istruttori = conn.execute(q)
     
     return render_template('istruttori.html',title='Elenco istruttori',lista_istruttori = lista_istruttori )
@@ -298,7 +304,7 @@ def creazionePalestra():
                 
                 with engine.connect() as conn:    
                     s = text("INSERT INTO Fascia_oraria(id_fascia, giorno, inizio, fine) VALUES (:id, :g, :ora_i, :ora_f)" )
-                    conn.execute(s,id=numFascia, g =intGiorno, ora_i=ora_inizio, ora_f= ora_fine )
+                    conn.execute(s,id=i, g =intGiorno, ora_i=ora_inizio, ora_f= ora_fine )
      #mostrare le fasce gia aggiunte:
     with engine.connect() as conn:    
             s = text("SELECT * FROM Fascia_oraria  ORDER BY id_fascia, giorno " )
@@ -370,10 +376,11 @@ def admin():
             #inserisco i dati
         try:
             with engine.connect() as conn:
-                s = text("INSERT INTO persone(codice_fiscale,nome,cognome,email,data_iscrizione,password,ruolo) VALUES (:codice_fiscale, :nome, :cognome, :email, :data_iscrizione, :password,1)")
-                conn.execute(s,codice_fiscale=cf, nome=nome, cognome=cognome,email=email, data_iscrizione = datetime.today(),password=generate_password_hash(pwd, method = 'sha256', salt_length = 8) )
-                s = text("INSERT INTO info_contatti(codice_fiscale,cellulare,città,residenza) VALUES (:codice_fiscale,:cellulare, :citta,:residenza)")
-                conn.execute(s,codice_fiscale=cf,cellulare=cell, citta = citta , residenza = residenza)
+                s = text("INSERT INTO persone(codice_fiscale,nome,cognome,email,data_iscrizione,password,citta,residenza ,ruolo) VALUES (:codice_fiscale, :nome, :cognome, :email, :data_iscrizione, :password,:citta,:res,1)")
+                conn.execute(s,codice_fiscale=cf, nome=nome, cognome=cognome,email=email, data_iscrizione = datetime.today(),password=generate_password_hash(pwd, method = 'sha256', salt_length = 8),citta=citta,res=residenza)
+
+                s = text("INSERT INTO info_contatti(codice_fiscale,telefono,descrizione) VALUES (:codice_fiscale,:cellulare,'Cellulare')")
+                conn.execute(s,codice_fiscale=cf,cellulare=cell)
                
                 flash("inserimento")
                 

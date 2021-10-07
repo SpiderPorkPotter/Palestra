@@ -6,18 +6,18 @@
 
 
 
-{% if ruolo_utente == 2 %}
-<h2> inserisci informazioni sul corso in data: {{data}}</h2>
-<form>
-    Nome corso : 
-    <input type="text" name="nomeCorso">
-    <input type="text" name="sale">
-    <br>
-    {% for row in fasce %}
-        Fascia {{row['id_fascia']}} dalle {{row['inizio']}} alle {{row['fine']}}
-        <br>
 
-    {% endfor %}
+<h2> inserisci informazioni sul corso in data: {{data}}</h2>
+<form action="/corsi", method="POST">
+     
+    Ora iniziale :
+    <input type="time" name="ora_iniziale_ricerca">
+    <br>
+    Ora finale :
+    <input type="time" name="ora_finale_ricerca">
+    <br>
+    <input type="hidden" name="dataSelezionata" value="{{data}}">
+    <input type="submit" name="ricerca" value="Cerca">
 </form>
-{% endif %}
+
 {% endblock %}
