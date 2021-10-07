@@ -29,6 +29,23 @@
     </ul>
     <hr />
 
+    <!-- poteri del boss
+        dropdown template preso da qui:http://localhost:56500/profilo#-->
+    {% if ruolo == 'capo' %}
+
+    <div class="dropdown">
+        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+            Menu Poteri Boss
+        </a>
+
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <li><a class="dropdown-item" href="/registrazione">ciao</a></li>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a class="dropdown-item" href="#">qualcosa</a></li>
+        </ul>
+    </div>
+    {% endif %}
+
     <!-- Tabella esempio in cui apparirebbero le prenotazioni attive
         del proprio profilo-->
     {% if ruolo != 'capo' %}
@@ -66,8 +83,8 @@
         Non dava problemi, perché comunque veniva renderizzato, però segnava comunque errore
         L'ho spostato fuori dalla tabella e collegato tutti gli input usando l'id del form
         e usando l'attributo "form" secondo quanto riportato qui:
-        https://stackoverflow.com/questions/5967564/form-inside-a-table 
-        
+        https://stackoverflow.com/questions/5967564/form-inside-a-table
+
         Non so se funziona perché non ho capito bene come viene gestito, quindi non
         ho apportato ulteriori modifiche-->
     <form action="/profilo" id="form_tabella" method="POST"></form>
@@ -93,13 +110,13 @@
 
                 <!--<form action="/profilo" method="POST">-->
                 <td>
-                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella" value="istruttore" 
-                    {% if row['ruolo']== 2 %} checked {% endif %}> istruttore
+                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella" value="istruttore"
+                           {% if row['ruolo']= =2 %} checked {% endif %}> istruttore
                 </td>
 
                 <td>
                     <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella"
-                    {% if row['ruolo']== 3 %} checked {% endif %} value="iscritto"> iscritto
+                           {% if row['ruolo']= =3 %} checked {% endif %} value="iscritto"> iscritto
                 </td>
                 <td>
                     <input type="hidden" name="id_passato" value="{{ row['codice_fiscale'] }}" form="form_tabella">

@@ -26,13 +26,26 @@
         <label for="Cellulare">Cellulare</label>
         <input type="text" name="cell" value="" placeholder="cellulare" class="form-control" maxlength="10">
         <br />
+        <br />
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="inputGroupSelect01">Tipo di telefono:</label>
+                </div>
+                <select name="cellAdmin" class="form-select">
+                    <option selected>Scegli qui</option>
+                    <option value="Cellulare">Cellulare</option>
+                    <option value="Casa">Casa</option>
+                    <option value="Altro">Altro</option>
+                </select>
+            </div>
+        <br />
         <label for="Città">Citt&agrave;</label>
         <input type="text" name="citta" value="" placeholder="città" class="form-control" maxlength="10">
         <br />
         <label for="Residenza">Residenza</label>
         <input type="text" name="residenza" value="" placeholder="residenza" class="form-control" maxlength="10">
     </div>
-</br>
+<br />
 <input type="submit" name="inserimentocapo" class=" btn btn-primary" value="InserisciCapo">
 
 </form>

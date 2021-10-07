@@ -24,8 +24,8 @@ import numpy
 nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
 #psycopg2 è il driver che si usa per comunicare col database
 
-DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-#DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
 engine = create_engine(DB_URI)
 
 #inizializza la libreria che gestisce i login
@@ -63,7 +63,6 @@ class RegistrazioneForm(FlaskForm):
     #chk_password = PasswordField('conferma password', validators = [InputRequired(), Length(min = 8, max = 50)])
     #le opzioni di contatto 
     telefono = StringField('Telefono', validators = [InputRequired(), Length(min = 9, max = 11)])
-    telefonoFisso = StringField('Telefono fisso', validators = [Optional(), Length(min = 9, max = 11)])
     residenza = StringField('Luogo di residenza', validators = [InputRequired()])
     citta = StringField('Città di residenza', validators = [InputRequired()])
 
@@ -97,7 +96,7 @@ def login():
             return redirect(url_for('profilo'))
         #else
         flash('Email o Password errati')
-        return redirect('/profilo')
+        return redirect('/login')
         
 
     return render_template('login.html', title = 'login', form = form)
@@ -121,26 +120,26 @@ def registrazione():
 
         #per l'oggetto contatti
         tel = form.telefono.data
-        telFisso = form.telefonoFisso.data
+        type_tel = request.form['menuContatti']
         resdz = form.residenza.data
         citt = form.citta.data
 
         #creo l'oggetto utente
-        nuovo_utente = Persone(nome = nom,
+        nuovo_utente = Persone( nome = nom,
                                 cognome = cogn,
                                 email = em ,
                                 data_iscrizione = datetime.today(),
                                 codice_fiscale = codiceFisc,
+                                residenza = resdz,
+                                citta = citt,
                                 ruolo = 3  # RUOLI :  adminDB=0, capo=1, istruttore=2, iscritto=3 
                                )
         nuovo_utente.set_password(passwd)
 
         info_nuovo_utente = InfoContatti(
-                    cellulare = tel,
-                    tel_fisso = telFisso,
-                    residenza = resdz,
-                    città = citt,
-                    codice_fiscale = codiceFisc
+                    telefono = tel,
+                    descrizione = type_tel,
+                    codice_fiscale = codiceFisc,
                     )
 
         
@@ -365,6 +364,7 @@ def admin():
         email = request.form['email']
         pwd = request.form['psw']
         cell = request.form['cell']
+        tipoCell = request.form['cellAdmin']
         residenza =  request.form['residenza']
         citta = request.form['citta']
         
@@ -379,8 +379,8 @@ def admin():
                 s = text("INSERT INTO persone(codice_fiscale,nome,cognome,email,data_iscrizione,password,citta,residenza ,ruolo) VALUES (:codice_fiscale, :nome, :cognome, :email, :data_iscrizione, :password,:citta,:res,1)")
                 conn.execute(s,codice_fiscale=cf, nome=nome, cognome=cognome,email=email, data_iscrizione = datetime.today(),password=generate_password_hash(pwd, method = 'sha256', salt_length = 8),citta=citta,res=residenza)
 
-                s = text("INSERT INTO info_contatti(codice_fiscale,telefono,descrizione) VALUES (:codice_fiscale,:cellulare,'Cellulare')")
-                conn.execute(s,codice_fiscale=cf,cellulare=cell)
+                s = text("INSERT INTO info_contatti(codice_fiscale,telefono,descrizione) VALUES (:codice_fiscale,:cellulare,:descrizione)")
+                conn.execute(s,codice_fiscale=cf,cellulare=cell, descrizione=tipoCell)
                
                 flash("inserimento")
                 
