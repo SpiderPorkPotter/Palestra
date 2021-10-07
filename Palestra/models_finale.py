@@ -1,7 +1,5 @@
 # coding: utf-8
-#generato con sqlacodegen postgresql://postgres:a@localhost/Palestra --outfile modelsv_finale.py
-#a è la password del mio db
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Time
+from sqlalchemy import Boolean, Column, Date, Enum, ForeignKey, Integer, String, Time, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
@@ -9,7 +7,8 @@ from flask_login import UserMixin, LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 
-
+#generato con:
+#sqlacodegen postgresql://postgres:a@localhost/Palestra --outfile modelsv_finale.py
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -19,7 +18,7 @@ login_manager = LoginManager()
 class FasciaOraria(Base):
     __tablename__ = 'fascia_oraria'
 
-    id_fascia = Column(Integer, primary_key=True)
+    id_fascia = Column(Integer, primary_key=True, server_default=text("nextval('fascia_oraria_id_fascia_seq'::regclass)"))
     giorno = Column(Integer, primary_key=True)
     inizio = Column(Time, nullable=False)
     fine = Column(Time, nullable=False)
@@ -32,11 +31,13 @@ class Persone(UserMixin, Base, db.Model):
     nome = Column(String(50), nullable=False)
     cognome = Column(String(50), nullable=False)
     data_iscrizione = Column(Date, nullable=False)
+    residenza = Column(String(50), nullable=False)
+    citta = Column(String(50), nullable=False)
     email = Column(String(50), nullable=False)
     password = Column(String(80), nullable=False)
-    ruolo = Column(Integer, primary_key=True)
+    ruolo = Column(Integer, nullable=False)
 
-    #############
+        #############
     #__repr__ restituisce un array associativo contentente i valori qui sotto elencati, vedi link per chiarimenti
     #https://stackoverflow.com/questions/57647799/what-is-the-purpose-of-thing-sub-function-returning-repr-with-f-str
     def __repr__(self):
@@ -45,7 +46,8 @@ class Persone(UserMixin, Base, db.Model):
                             nome = self.nome,
                             cognome = self.cognome,
                             data_iscrizione = self.data_iscrizione,
-                            telefono = self.telefono,
+                            residenza = self.residenza,
+                            citta = self.citta,
                             email = self.email,
                             password = self.password,
                             ruolo = self.ruolo
@@ -77,6 +79,12 @@ class Persone(UserMixin, Base, db.Model):
         """Ritorna falso, perché gli utenti anonimi non sono supportati"""
         return False
 
+class PolicyOccupazione(Base):
+    __tablename__ = 'policy_occupazione'
+
+    data_inizio = Column(Date, primary_key=True, nullable=False)
+    data_fine = Column(Date, primary_key=True, nullable=False)
+    percentuale_occupabilità = Column(Integer, nullable=False)
 
 
 class Sale(Base):
@@ -85,70 +93,50 @@ class Sale(Base):
     id_sala = Column(Integer, primary_key=True)
     posti_totali = Column(Integer, nullable=False)
     solo_attrezzi = Column(Boolean, nullable=False)
-    corsi = relationship('Corsi', secondary='sale_corsi')
+
 
 class Corsi(Base):
     __tablename__ = 'corsi'
 
-    nome_corso = Column(String(50), nullable=False)
-    max_partecipanti = Column(Integer, nullable=False)
-    id_fascia = Column(ForeignKey('fascia_oraria.id_fascia'), nullable=False, index=True)
-    
-    codice_fiscale = Column(ForeignKey('persone.codice_fiscale'), nullable=False, index=True)
     id_corso = Column(Integer, primary_key=True)
+    nome_corso = Column(String(50), nullable=False)
+    codice_fiscale_istruttore = Column(ForeignKey('persone.codice_fiscale'), nullable=False, index=True)
 
     persone = relationship('Persone')
-    fascia_oraria = relationship('FasciaOraria')
-   
-    sale = relationship('Sale', secondary='sale_corsi')
-
-
 
 
 class InfoContatti(Base):
     __tablename__ = 'info_contatti'
 
-    cellulare = Column(String(11), primary_key=True, nullable=False)
-    tel_fisso = Column(String(11), nullable=True)
-    residenza = Column(String(50), nullable=False)
-    città = Column(String(50), nullable=False)
+    telefono = Column(String(11), primary_key=True)
+    descrizione = Column(Enum('Cellulare', 'Casa', 'Altro', name='tipo_numero'), nullable=False)
     codice_fiscale = Column(ForeignKey('persone.codice_fiscale'), nullable=False, index=True)
 
     persone = relationship('Persone')
-
-
-class PolicyOccupazione(Base):
-    __tablename__ = 'policy_occupazione'
-
-    data_inizio = Column(Date, primary_key=True, nullable=False)
-    data_fine = Column(Date, primary_key=True, nullable=False)
-    percentuale_occupabilità = Column(Integer, nullable=False)
-    id_sala = Column(ForeignKey('sale.id_sala'), nullable=False, index=True)
-
-    sale = relationship('Sale')
 
 
 class Prenotazioni(Base):
     __tablename__ = 'prenotazioni'
 
     data = Column(Date, nullable=False)
-    email = Column(String(50), nullable=False)
     codice_fiscale = Column(ForeignKey('persone.codice_fiscale'), nullable=False, index=True)
     id_sala = Column(ForeignKey('sale.id_sala'), nullable=False, index=True)
-    id_corso = Column(ForeignKey('corsi.id_corso'), nullable=False, index=True)
-    id_fascia = Column(ForeignKey('fascia_oraria.id_fascia'), nullable=False, index=True)
+    id_fascia = Column(ForeignKey('fascia_oraria.id_fascia'), nullable=False, index=True, server_default=text("nextval('prenotazioni_id_fascia_seq'::regclass)"))
     codice_prenotazione = Column(Integer, primary_key=True)
 
     persone = relationship('Persone')
-    corsi = relationship('Corsi')
     fascia_oraria = relationship('FasciaOraria')
     sale = relationship('Sale')
 
 
-class Sale_corsi(Base):
+class SaleCorsi(Base):
     __tablename__ = 'sale_corsi'
 
-    data = Column(Date, nullable=False, primary_key=True)
-    id_sala = Column(Integer,ForeignKey('sale.id_sala'), nullable=False, index=True,primary_key=True)
-    id_corso = Column(Integer ,ForeignKey('corsi.id_corso'), nullable=False, index=True, primary_key=True)
-    
+    id_sala = Column(ForeignKey('sale.id_sala'), primary_key=True, nullable=False, index=True)
+    id_corso = Column(ForeignKey('corsi.id_corso'), primary_key=True, nullable=False, index=True)
+    data = Column(Date, primary_key=True, nullable=False)
+    id_fascia = Column(ForeignKey('fascia_oraria.id_fascia'), primary_key=True, nullable=False, index=True, server_default=text("nextval('sale_corsi_id_fascia_seq'::regclass)"))
+
+    corsi = relationship('Corsi')
+    fascia_oraria = relationship('FasciaOraria')
+    sale = relationship('Sale')
