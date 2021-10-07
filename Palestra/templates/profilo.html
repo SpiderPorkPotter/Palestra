@@ -33,15 +33,16 @@
         dropdown template preso da qui:http://localhost:56500/profilo#-->
     {% if ruolo == 'capo' %}
 
-    <div class="dropdown">
-        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-            Menu Poteri Boss
-        </a>
-
-        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-            <li><a class="dropdown-item" href="/registrazione">ciao</a></li>
-            <li><a href="{{ url_for('home') }}">Home</a></li>
-            <li><a class="dropdown-item" href="#">qualcosa</a></li>
+    <div class="btn-group">
+        <button type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            Poteri Del Capo
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#">Action</a></li>
+            <li><a class="dropdown-item" href="#">Another action</a></li>
+            <li><a class="dropdown-item" href="#">Something else here</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Separated link</a></li>
         </ul>
     </div>
     {% endif %}
@@ -108,27 +109,26 @@
                 <td>{{ row['cognome'] }}</td>
                 <td>{{ row['cellulare'] }}</td>
 
-                <!--<form action="/profilo" method="POST">-->
+                
                 <td>
                     <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella" value="istruttore"
-                           {% if row['ruolo']= =2 %} checked {% endif %}> istruttore
+                           {% if row['ruolo']==2 %} checked {% endif %}> istruttore
                 </td>
 
                 <td>
                     <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella"
-                           {% if row['ruolo']= =3 %} checked {% endif %} value="iscritto"> iscritto
+                           {% if row['ruolo']==3 %} checked {% endif %} value="iscritto"> iscritto
                 </td>
                 <td>
                     <input type="hidden" name="id_passato" value="{{ row['codice_fiscale'] }}" form="form_tabella">
                 </td>
                 <td><input type="submit" name="modificavalori" class="btn btn-primary" form="form_tabella" value="ModificaPermessi"> </td>
-                <!--</form>-->
+                
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    </form>
     {% endif %}
 </div>
 
