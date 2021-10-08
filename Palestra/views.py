@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin
 from flask_wtf import FlaskForm, form
 from sqlalchemy.sql.elements import Null
-from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.expression import null, text
 from wtforms import StringField, PasswordField, IntegerField, FormField, RadioField
 from wtforms.fields.html5 import DateTimeLocalField
 from wtforms.validators import InputRequired, Email, Length, Optional
@@ -434,15 +434,36 @@ def crea_sala():
 
     return render_template("creazioneSala.html", title = "Crea una nuova sala nella tua palestra", form = form, id_sala = id_next_sala)
 
-
-
-
 @app.route('/policy_occupazione', methods=['POST', 'GET'])
 def policy_occupazione():
+    
+    tutte_le_policy = text("SELECT * FROM policy_occupazione ")
+    with engine.connect() as conn:
+        policies = conn.execute(tutte_le_policy)
+        copia = conn.execute(tutte_le_policy)
+    
+    lista_date_inizio = []
+    lista_date_fine = []   
+    for row in copia:
+        if row['data_inizio'] != null and row['data_fine'] != null: 
+            lista_date_inizio.append(row['data_inizio'])
+            lista_date_fine.append(row['data_fine'])
 
 
+    if request.method== 'POST' and 'confermaPolicy' in request.form:
+        data_inizio = request.form['dpcm-start']    
+        data_fine = request.form['dpcm-end']
+        perc = request.form['perc']
 
-    return render_template("policyOccupazione.html", title = "Occupazione", )
+        if data_inizio in lista_date_inizio or data_fine in lista_date_fine:
+            flash('controlla meglio le date')
+        else:    
+            inserimento_policy = text("INSERT INTO policy_occupazione(data_inizio,data_fine, percentuale_occupabilità) VALUES(:i , :f, :p) ")
+        with engine.connect() as conn:
+            conn.execute(inserimento_policy, i=data_inizio, f=data_fine, p=perc)
+            flash("inserimento riuscito")
+        
+    return render_template("policyOccupazione.html", title = "Occupazione", policies  = policies )
 
 
 #-------------------UTILI--------------
