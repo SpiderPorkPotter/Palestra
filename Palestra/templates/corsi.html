@@ -20,4 +20,24 @@
     <input type="submit" name="ricerca" value="Cerca">
 </form>
 
+
+
+    {% set i = 1 %}
+{% for row  in sale_disp_con_fasce %}
+
+    {% if i < row['tot_fasce'] %}
+        sala row['id_sala'] :
+        dalle : row['inizio']
+        alle : row['fine']
+        {% set i = i + 1 %}
+    
+    {% elif i == row['tot_fasce'] %}
+        {% set i = 1 %}
+    {% endif %}
+    
+
+{% endfor %}
+
+
+
 {% endblock %}
