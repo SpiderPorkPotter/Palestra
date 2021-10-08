@@ -24,8 +24,8 @@ import numpy
 nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
 #psycopg2 è il driver che si usa per comunicare col database
 
-#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
 engine = create_engine(DB_URI)
 
 #inizializza la libreria che gestisce i login
@@ -244,16 +244,24 @@ def corsi():
                 ruolo_utente = Persone.get_role(current_user)
                     #if ruolo_utente == 2: # istruttore
                 
-                sale_disponibili = text("SELECT * FROM sale_corsi sc JOIN fascia_oraria fo ON fo.id_fascia = sc.id_fascia WHERE data =:dataDB AND :ora_inizio <= fo.inizio AND :ora_fine >= fo.fine   ")
-            
-                #intGiorno_settimana = int(datetime.strptime(data,"%y %m %d").weekday())+1
+
+                #TODO: DA FARE!!!!
+                sale_disponibili_con_fasce = text(
+                    "SELECT sc.id_sala, fo.id_fascia, fo.inizio ,fo.fine , COUNT(fo.id_fascia) AS tot_fasce " 
+                        "FROM sale_corsi sc JOIN fascia_oraria fo ON fo.id_fascia = sc.id_fascia JOIN sale s ON s.id_sala=sc.id_sala "
+                        "WHERE data =:dataDB AND :ora_inizio <= fo.inizio AND :ora_fine >= fo.fine AND s.solo_attrezzi = false "
+                        "GROUP BY sc.id_sala, fo.id_fascia, fo.inizio ,fo.fine) "
+                )
+
+                intGiorno_settimana = int(datetime.strptime(data,"%y %m %d").weekday())+1
+
                 input_ora_inizio = request.form['ora_iniziale_ricerca']
                 input_ora_fine = request.form['ora_finale_ricerca']
                 #s = text("SELECT * FROM fascia_oraria WHERE giorno=:g ")
                 with engine.connect() as conn:
-                    sale_disp = conn.execute(sale_disponibili,dataDB=data_for_DB,ora_inizio=input_ora_inizio,ora_fine=input_ora_fine, dataSelezionata = data)
+                    sale_disp_con_fasce = conn.execute(sale_disponibili_con_fasce,dataDB=data_for_DB,ora_inizio=input_ora_inizio,ora_fine=input_ora_fine, dataSelezionata = data)
             
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp =sale_disp)
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_disp_con_fasce)
         else:
             render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         
@@ -429,6 +437,14 @@ def crea_sala():
 
 
 
+@app.route('/policy_occupazione', methods=['POST', 'GET'])
+def policy_occupazione():
+
+
+
+    return render_template("policyOccupazione.html", title = "Occupazione", )
+
+
 #-------------------UTILI--------------
 
 def creaIDsala():
@@ -441,3 +457,5 @@ def creaIDsala():
 
         next_id = int(num_sala) + 1
         return next_id
+
+
