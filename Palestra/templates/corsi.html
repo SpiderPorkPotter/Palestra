@@ -31,6 +31,34 @@
     })
 </script>
 
+
+
+<table>
+    {% for row in info_corsi %}
+        <tr>
+            <td>{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td> <td>{{row['nome_corso']}}</td> <td>{{row['nome_istruttore']}}</td>    
+        </tr>    
+    {% endfor %}
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <form action="/corsi" method="POST">
     <table class="table">
             <th>Dalle</th><th>Alle</th><th>Sala</th><th>Posti Totali</th>
