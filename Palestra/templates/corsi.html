@@ -15,6 +15,7 @@
     <br>
     <input type="button" id="id_btn_giornoIntero" name="giornoIntero" value="Tutto Il Giorno">
     <input type="hidden" name="dataSelezionata" value="{{data}}">
+    <br>
     <input type="submit" name="ricerca" value="Cerca">
 </form>
 
@@ -44,7 +45,7 @@
     </table>
     <table class="table">
         <tr>
-            <td>Nome del corso : </td> <td><input type="text" name ="nomeCorso" placeholder="Scrivi il nome del corso" required> </td>
+            <td>Nome del corso : </td> <td><input type="text" name ="nomeCorso" maxlength="50" placeholder="Scrivi il nome del corso" required> </td>
          </tr>
          <tr>
            <td> <input type="submit" name ="inserimentoCorso" value="Inserisci il corso"> </td>

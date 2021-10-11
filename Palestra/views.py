@@ -243,10 +243,24 @@ def corsi():
 
         if request.method == 'POST'and "inserimentoCorso" in request.form and request.form['inserimentoCorso'] == "Inserisci il corso" and "fasceSaleSelezionate" in request.form:
             checkboxes_inputs = request.form.getlist("fasceSaleSelezionate")
-            for e in checkboxes_inputs:
-                #TODO DA FARE INSERIMANTO
-                print(e)
+            #sintassi del valore della singola checkbox "idfascia_{{row['id_fascia']}} idsala_{{row['id_sala']}}"
+            try:
+                nome_corso = request.form['nomeCorso']
+                cf_istruttore = Persone.get_id(current_user)
+                for e in checkboxes_inputs:
+                    nuovo_id_corso = creaIDcorso()
+                    idfascia_e_id_sala = e.split(' ')
+                    id_fascia = idfascia_e_id_sala[0].split('_')[1]
+                    id_sala = idfascia_e_id_sala[1].split('_')[1]
+                    with engine.connect() as conn :
+                        prep_query2 = text("INSERT INTO corsi( id_corso, nome_corso, codice_fiscale_istruttore) VALUES( :idc , :nc , :cfi)")
+                        conn.execute(prep_query2, idc = nuovo_id_corso , nc=nome_corso , cfi= cf_istruttore)
 
+                        prep_query = text("INSERT INTO sale_corsi(id_sala, id_corso, data, id_fascia) VALUES(:ids , :idc , :d , :idf)")
+                        conn.execute(prep_query, ids=id_sala, idc=nuovo_id_corso, d= data_for_DB, idf=id_fascia)
+                        
+            except:
+                flash("Aia! sembra che qualcuno ti abbia preceduto, rifai l'operazione")
 
         if is_ricerca_setted :
             if current_user != None and "ora_iniziale_ricerca" in request.form and "ora_finale_ricerca" in request.form:
@@ -257,10 +271,10 @@ def corsi():
                 intGiorno_settimana = data_to_giorno_settimana(data_for_DB)
 
                 q_sale_libere = text(
-                    "SELECT s.id_sala  , f1.inizio ,f1.fine ,f1.id_fascia "
-                    "FROM sale s , fascia_oraria f1 "
+                    "SELECT s.id_sala  , f1.inizio ,f1.fine ,f1.id_fascia, s.posti_totali "
+                    "FROM sale s JOIN fascia_oraria f1 ON ( f1.inizio >= :oraInizio AND f1.fine <= :oraFine AND f1.giorno = :g ) "
                     "WHERE s.id_sala NOT IN (SELECT sc.id_sala FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia = f.id_fascia WHERE f1.id_fascia = f.id_fascia AND sc.data = :dataDB) "
-                        " AND f1.inizio >= :oraInizio AND f1.fine <= :oraFine AND f1.giorno = :g AND s.solo_attrezzi IS FALSE "
+                    "AND s.solo_attrezzi IS FALSE "
 					"GROUP BY s.id_sala , f1.id_fascia "
                     "ORDER BY f1.id_fascia "
                 )
@@ -502,6 +516,19 @@ def data_to_giorno_settimana(dataString):
     d = date(int(anno),int(mese),int(giorno))
 
     return int(d.weekday())+1
+
+
+def creaIDcorso():
+     with engine.connect() as conn:
+        s = "SELECT COUNT(id_corso) AS num_corso FROM corsi "
+        res = conn.execute(s)
+        for row in res:
+            num_corso = row['num_corso']
+            break
+
+        next_id = int(num_corso) + 1
+        return next_id
+
 
 
 
