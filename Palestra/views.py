@@ -2,7 +2,7 @@
 Routes and views for the flask application.
 """
 
-from datetime import datetime
+from datetime import *
 from calendar import monthrange
 from flask import render_template, url_for, redirect, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -11,7 +11,6 @@ from flask_wtf import FlaskForm, form
 from sqlalchemy.sql.elements import Null
 from sqlalchemy.sql.expression import null, text
 from wtforms import StringField, PasswordField, IntegerField, FormField, RadioField
-from wtforms.fields.html5 import DateTimeLocalField
 from wtforms.validators import InputRequired, Email, Length, Optional
 from sqlalchemy import create_engine
 from Palestra import app
@@ -235,33 +234,43 @@ def corsi():
     
     data = request.form['dataSelezionata']
     tmp_data = data[2 : len(data) : ]
-    data_for_DB = datetime.strptime(tmp_data,"%y %m %d")
+    data_for_DB = str(datetime.strptime(tmp_data,"%y %m %d")).split(' ')
+    data_for_DB = data_for_DB[0]
+    print(data_for_DB)
     is_ricerca_setted = request.method == 'POST' and "ricerca" in request.form and request.form['ricerca'] == "Cerca"
     
     if "dataSelezionata" in request.form:
+
+        if request.method == 'POST'and "inserimentoCorso" in request.form and request.form['inserimentoCorso'] == "Inserisci il corso" and "fasceSaleSelezionate" in request.form:
+            checkboxes_inputs = request.form.getlist("fasceSaleSelezionate")
+            for e in checkboxes_inputs:
+                #TODO DA FARE INSERIMANTO
+                print(e)
+
+
         if is_ricerca_setted :
             if current_user != None and "ora_iniziale_ricerca" in request.form and "ora_finale_ricerca" in request.form:
                 ruolo_utente = Persone.get_role(current_user)
                     #if ruolo_utente == 2: # istruttore
-                
+               
+               
+                intGiorno_settimana = data_to_giorno_settimana(data_for_DB)
 
-                #TODO: DA FARE!!!!
-                sale_disponibili_con_fasce = text(
-                    "SELECT sc.id_sala, fo.id_fascia, fo.inizio ,fo.fine , COUNT(fo.id_fascia) AS tot_fasce " 
-                        "FROM sale_corsi sc JOIN fascia_oraria fo ON fo.id_fascia = sc.id_fascia JOIN sale s ON s.id_sala=sc.id_sala "
-                        "WHERE data =:dataDB AND :ora_inizio <= fo.inizio AND :ora_fine >= fo.fine AND s.solo_attrezzi = false "
-                        "GROUP BY sc.id_sala, fo.id_fascia, fo.inizio ,fo.fine) "
+                q_sale_libere = text(
+                    "SELECT s.id_sala  , f1.inizio ,f1.fine ,f1.id_fascia "
+                    "FROM sale s , fascia_oraria f1 "
+                    "WHERE s.id_sala NOT IN (SELECT sc.id_sala FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia = f.id_fascia WHERE f1.id_fascia = f.id_fascia AND sc.data = :dataDB) "
+                        " AND f1.inizio >= :oraInizio AND f1.fine <= :oraFine AND f1.giorno = :g AND s.solo_attrezzi IS FALSE "
+					"GROUP BY s.id_sala , f1.id_fascia "
+                    "ORDER BY f1.id_fascia "
                 )
-
-                intGiorno_settimana = int(datetime.strptime(data,"%y %m %d").weekday())+1
-
                 input_ora_inizio = request.form['ora_iniziale_ricerca']
                 input_ora_fine = request.form['ora_finale_ricerca']
-                #s = text("SELECT * FROM fascia_oraria WHERE giorno=:g ")
+
                 with engine.connect() as conn:
-                    sale_disp_con_fasce = conn.execute(sale_disponibili_con_fasce,dataDB=data_for_DB,ora_inizio=input_ora_inizio,ora_fine=input_ora_fine, dataSelezionata = data)
-            
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_disp_con_fasce)
+                    sale_libere = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
+                
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_libere)
         else:
             render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         
@@ -290,7 +299,6 @@ def creazionePalestra():
     """pagina della creazione della palestra"""
 
     if "inviaFasce" in request.form:
-        #CONVERTIRE DA MULTI DICT IN LIST
         copia_POST_array = numpy.array(list(request.form))
         for i in range(len(copia_POST_array)-1):
             
@@ -406,6 +414,9 @@ class CreaSalaForm(FlaskForm):
    
     nPosti = IntegerField('Numero posti totali', validators = [InputRequired(), Length(min = 1, max = 3)])
     attrezzi = RadioField('Seleziona se contiene solo attrezzi', choices=[('True','SI'),('False','NO')])
+    
+    
+    
 
 
 @app.route('/crea_sala', methods=['POST', 'GET'])
@@ -426,6 +437,7 @@ def crea_sala():
                             posti_totali = posti,
                             solo_attrezzi = attrez
                             )
+        
         db.session.add(nuova_sala)
         db.session.commit()
         flash('Creazione completata')
@@ -478,5 +490,20 @@ def creaIDsala():
 
         next_id = int(num_sala) + 1
         return next_id
+
+def data_to_giorno_settimana(dataString):
+    print("la datastring")
+    print(dataString)
+    arr = []
+    arr = dataString.split('-')
+    giorno = arr[2]
+    mese = arr[1]
+    anno = arr[0]
+    d = date(int(anno),int(mese),int(giorno))
+
+    return int(d.weekday())+1
+
+
+
 
 
