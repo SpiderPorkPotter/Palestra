@@ -1,7 +1,7 @@
 # coding: utf-8
 
-
 from sqlalchemy import Boolean, Column, Date, Enum, ForeignKey, Integer, String, Time, text, Text
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
