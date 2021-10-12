@@ -40,10 +40,12 @@
     <Folder Include="Palestra\static\" />
     <Folder Include="Palestra\static\content\" />
     <Folder Include="Palestra\static\fonts\" />
+    <Folder Include="Palestra\static\media\" />
     <Folder Include="Palestra\static\scripts\" />
     <Folder Include="Palestra\templates\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Palestra\static\media\LogoActygym.PNG" />
     <Content Include="Palestra\templates\admin.html" />
     <Content Include="Palestra\templates\calendario.html" />
     <Content Include="Palestra\templates\corsi.html" />

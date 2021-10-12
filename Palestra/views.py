@@ -23,8 +23,8 @@ import numpy
 nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
 #psycopg2 è il driver che si usa per comunicare col database
 
-DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-#DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
 engine = create_engine(DB_URI)
 
 #inizializza la libreria che gestisce i login
@@ -69,6 +69,10 @@ class RegistrazioneForm(FlaskForm):
 @app.route('/')
 @app.route('/home')
 def home():
+
+
+
+
     return render_template(
         'home.html',
         title='Home Page'

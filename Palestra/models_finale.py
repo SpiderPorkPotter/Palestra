@@ -105,6 +105,14 @@ class Corsi(Base):
     persone = relationship('Persone')
 
 
+class TipologieCorsi(Base):
+    __tablename__ = 'tipologie_corsi'
+
+    id_tipologia = Column(Integer, primary_key=True)
+    nome_tipologia = Column(String(50), nullable=False)
+    descrizione = Column(Text, nullable=False)
+
+
 class InfoContatti(Base):
     __tablename__ = 'info_contatti'
 
