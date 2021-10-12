@@ -103,6 +103,7 @@ class Corsi(Base):
     codice_fiscale_istruttore = Column(ForeignKey('persone.codice_fiscale'), nullable=False, index=True)
 
     persone = relationship('Persone')
+    tipologie_corsi = relationship('TipologieCorsi')
 
 
 class TipologieCorsi(Base):
