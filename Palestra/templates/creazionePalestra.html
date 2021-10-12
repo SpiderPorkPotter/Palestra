@@ -71,10 +71,6 @@ function check_all_ok(){
                 check_all_ok()
                 return
             })
-
-
-
-           
             var table = document.getElementById('table_'+intGiorno)
             var tr = document.createElement('tr');
 
@@ -138,12 +134,7 @@ function check_all_ok(){
 <script > crea("7") </script>
 
 <input id="inviaFasce" type="submit" name="inviaFasce" value="Salva">
-
-
 </form>
-
-
-
 
 {% if tab_fasce != Null %}
 <br>
@@ -162,6 +153,23 @@ function check_all_ok(){
     {% endfor  %}
     </table>
 {% endif %}
+
+<div class="form-group>" >
+    <h4> Tipologie dei corsi gia inserite :</h4>
+    {% if tipologie_corsi %}
+        <p>Tipologie gia inserite: </p>
+        <ul>
+            {% for row in tipologie_corsi %}
+                {{row['nome_tipologia_corsi']}}    
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <form action="/creazionePalestra" method="POST" id="tipologiaCorsoForm">
+        <input type="text" maxlength="50" name="nomeTipologiaCorso">
+        <input type="submit" name="AggiungiTipoCorso" value="Aggiungi Tipologia">
+    </form>
+    <textarea name="descrizioneTipologiaCorso" form="tipologiaCorsoForm">Inserire la descrizione della tipologia qui. </textarea>
+</div>
 
 
 

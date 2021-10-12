@@ -23,8 +23,8 @@ import numpy
 nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
 #psycopg2 è il driver che si usa per comunicare col database
 
-#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
 engine = create_engine(DB_URI)
 
 #inizializza la libreria che gestisce i login
@@ -249,7 +249,9 @@ def corsi():
             checkboxes_inputs = request.form.getlist("fasceSaleSelezionate")
             #sintassi del valore della singola checkbox "idfascia_{{row['id_fascia']}} idsala_{{row['id_sala']}}"
             try:
+                id_tipologia_corso = request.form['tipologie']
                 nome_corso = request.form['nomeCorso']
+
                 cf_istruttore = Persone.get_id(current_user)
                 for e in checkboxes_inputs:
                     nuovo_id_corso = creaIDcorso()
@@ -257,13 +259,14 @@ def corsi():
                     id_fascia = idfascia_e_id_sala[0].split('_')[1]
                     id_sala = idfascia_e_id_sala[1].split('_')[1]
                     with engine.connect() as conn :
-                        prep_query2 = text("INSERT INTO corsi( id_corso, nome_corso, codice_fiscale_istruttore) VALUES( :idc , :nc , :cfi)")
-                        conn.execute(prep_query2, idc = nuovo_id_corso , nc=nome_corso , cfi= cf_istruttore)
+                        prep_query2 = text("INSERT INTO corsi( id_corso, nome_corso, codice_fiscale_istruttore , id_tipologia) VALUES( :idc , :nc ,:cfi, :idt)")
+                        conn.execute(prep_query2, idc = nuovo_id_corso , nc=nome_corso , cfi= cf_istruttore, idt=id_tipologia_corso )
 
                         prep_query = text("INSERT INTO sale_corsi(id_sala, id_corso, data, id_fascia) VALUES(:ids , :idc , :d , :idf)")
                         conn.execute(prep_query, ids=id_sala, idc=nuovo_id_corso, d= data_for_DB, idf=id_fascia)
                         
             except:
+                raise
                 flash("Aia! sembra che qualcuno ti abbia preceduto, rifai l'operazione")
 
         if is_ricerca_setted :
@@ -273,9 +276,16 @@ def corsi():
                 input_ora_fine = request.form['ora_finale_ricerca']
 
                 #if ruolo_utente == 2 or ruolo_utente == 1 #ricerca corsi disponibili
-                s = text("SELECT f.inizio,f.fine, sc.id_sala,co.nome_corso, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
+                q_lista_tipologie = text("SELECT id_tipologia, nome_tipologia FROM tipologie_corsi ")
+                with engine.connect() as conn:
+                    lista_tipologie_tab = conn.execute(q_lista_tipologie)
+                    
+                    
+
+
+                s = text("SELECT f.inizio,f.fine, sc.id_sala,tc.id_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
                         "FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia=f.id_fascia "
-                        "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON pi.codice_fiscale =co.codice_fiscale_istruttore "
+                        "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON pi.codice_fiscale =co.codice_fiscale_istruttore JOIN tipologie_corsi tc ON co.id_tipologia=tc.id_tipologia "
                         "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND sc.data = :input_data "
                         "AND s.posti_totali > (SELECT Count(*)AS numPrenotati " 
                                 "FROM prenotazioni pr JOIN sale_corsi sc1 ON (sc1.id_sala=sc.id_sala AND pr.id_sala= sc.id_sala) "
@@ -286,20 +296,8 @@ def corsi():
                         corsi_liberi = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB )
                 except:
                     raise
-
-
-
-
-
-
-
-
-
                 #if ruolo_utente == 2: # istruttore
                
-               
-                
-
                 q_sale_libere = text(
                     "SELECT s.id_sala  , f1.inizio ,f1.fine ,f1.id_fascia, s.posti_totali "
                     "FROM sale s JOIN fascia_oraria f1 ON ( f1.inizio >= :oraInizio AND f1.fine <= :oraFine AND f1.giorno = :g ) "
@@ -313,7 +311,7 @@ def corsi():
                 with engine.connect() as conn:
                     sale_libere = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
                 
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_libere , info_corsi =corsi_liberi)
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_libere , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab)
         else:
             render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         
@@ -338,8 +336,27 @@ def istruttori():
 
 @app.route('/creazionePalestra',methods=['POST', 'GET'])
 def creazionePalestra():
-    
+    tipologie_presenti = []
     """pagina della creazione della palestra"""
+    if "AggiungiTipoCorso" in request.form and request.form['AggiungiTipoCorso'] is not None and "nomeTipologiaCorso" in request.form and request.form['nomeTipologiaCorso'] is not None :
+        nome_tipo = request.form['nomeTipologiaCorso']
+        descrizione = request.form['descrizioneTipologiaCorso']
+        #tipologie gia inserite
+        with engine.connect() as conn:
+            res = conn.execute(" SELECT nome_tipologia FROM tipologie_corsi")
+            tipologie_presenti = []
+            for row in res:
+                tipologie_presenti.append(row['nome_tipologia'])
+            #se non c'è la tipologia la inserisce
+            if nome_tipo not in tipologie_presenti:
+                s = text("INSERT INTO tipologie_corsi(id_tipologia,nome_tipologia,descrizione) VALUES( :id, :n, :d )")
+                conn.execute(s, id=creaIDtipologiaCorso(), n=nome_tipo , d=descrizione )
+                flash("inserimento della tipologia riuscito")
+            else:
+                flash('la tipologia è gia presente')
+            
+            
+            
 
     if "inviaFasce" in request.form:
         copia_POST_array = numpy.array(list(request.form))
@@ -349,7 +366,7 @@ def creazionePalestra():
 
                 s_fasciaInizio = str(copia_POST_array[i])
                 s_fasciaFine = str(copia_POST_array[i+1])
-               
+            
                 args_fascia_inizio = s_fasciaInizio.split('_')
                 args_fascia_fine = s_fasciaFine.split('_')
                 intGiorno = args_fascia_inizio[0]
@@ -363,12 +380,13 @@ def creazionePalestra():
                 with engine.connect() as conn:    
                     s = text("INSERT INTO Fascia_oraria(id_fascia, giorno, inizio, fine) VALUES (:id, :g, :ora_i, :ora_f)" )
                     conn.execute(s,id=i, g =intGiorno, ora_i=ora_inizio, ora_f= ora_fine )
-     #mostrare le fasce gia aggiunte:
+        
+    #mostrare le fasce gia aggiunte:
     with engine.connect() as conn:    
             s = text("SELECT * FROM Fascia_oraria  ORDER BY id_fascia, giorno " )
             tab_fasce = conn.execute(s)        
-           
-    return render_template('creazionePalestra.html',title='Crea La Palestra',tab_fasce = tab_fasce,nome_giorni_della_settimana = nome_giorni_della_settimana)
+            
+    return render_template('creazionePalestra.html',title='Crea La Palestra',tab_fasce = tab_fasce,nome_giorni_della_settimana = nome_giorni_della_settimana, tipologie_corsi =tipologie_presenti)
 
 
 @app.route('/calendario', methods=['POST', 'GET'])
@@ -558,6 +576,17 @@ def creaIDcorso():
         next_id = int(num_corso) + 1
         return next_id
 
+
+def creaIDtipologiaCorso():
+     with engine.connect() as conn:
+        s = "SELECT COUNT(*) AS num_tipologie FROM tipologie_corsi "
+        res = conn.execute(s)
+        for row in res:
+            num_tipologie = row['num_tipologie']
+            break
+
+        next_id = int(num_tipologie) + 1
+        return next_id
 
 
 

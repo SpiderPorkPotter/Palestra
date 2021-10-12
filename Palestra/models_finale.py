@@ -1,5 +1,7 @@
 # coding: utf-8
-from sqlalchemy import Boolean, Column, Date, Enum, ForeignKey, Integer, String, Time, text
+
+
+from sqlalchemy import Boolean, Column, Date, Enum, ForeignKey, Integer, String, Time, text, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
@@ -101,10 +103,10 @@ class Corsi(Base):
     id_corso = Column(Integer, primary_key=True)
     nome_corso = Column(String(50), nullable=False)
     codice_fiscale_istruttore = Column(ForeignKey('persone.codice_fiscale'), nullable=False, index=True)
+    id_tipologia = Column(ForeignKey('tipologie_corsi.id_tipologia'))
 
     persone = relationship('Persone')
     tipologie_corsi = relationship('TipologieCorsi')
-
 
 class TipologieCorsi(Base):
     __tablename__ = 'tipologie_corsi'
