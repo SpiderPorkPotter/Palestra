@@ -33,10 +33,18 @@
 
 
 
-<table>
+<table class="table">
+    <th>Sala</th><th>Dalle</th><th>Alle</th><th>Tipologia</th><th>Tenuto da</th>
     {% for row in info_corsi %}
         <tr>
-            <td>{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td> <td>{{row['nome_corso']}}</td> <td>{{row['nome_istruttore']}}</td>    
+            <td>Sala{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td> <td>{{row['nome_tipologia']}}</td> <td>{{row['nome_istruttore']}} {{row['cognome_istruttore']}}</td>
+            <td> <form action="profilo" method="post"> 
+                <input type="hidden" name="dataPrenotata" value="{{data}}"  >
+                <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
+                <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
+                <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
+                <input type="submit" name="prenotaCorso" value="Prenotati">
+            </form></td>    
         </tr>    
     {% endfor %}
 </table>
@@ -59,7 +67,7 @@
             <td>Tipo del corso : 
             <select name="tipologie">
                 {% for row in lista_tipologie_tab %}
-                <option value="{{ row['id_tipologia'] }}"> {{ row['nome_tipologia'] }}</option>
+                <option value="{{row['id_tipologia']}}"> {{ row['nome_tipologia'] }}</option>
                 {% endfor %}
             </select>
             </td> 

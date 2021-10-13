@@ -171,6 +171,27 @@ def profilo():
 
         dati_utente_corrente = Persone.query.filter_by(codice_fiscale = id).first()
         #se voglio il telefono devo fare un'altra query
+        if "prenotaCorso" in request.form and request.form['prenotaCorso'] == "Prenotati":
+            data_prenotata=request.form['dataPrenotata'].replace(" ", "-")
+            id_sala=request.form['idSala']
+            cf_utente=request.form['codiceFiscaleUtente']
+            id_fascia=request.form['idFascia']
+
+        #controllo se è disponibile un posto da fare con visa
+        
+        #inserisco il posto
+            try:
+                q_insert_posto = text("INSERT INTO prenotazioni(data,codice_fiscale,id_sala,id_fascia, codice_prenotazione) VALUES(:d,:cf,:ids,:idf, :cod_prenotazione) ")
+                with engine.connect() as conn:
+                    conn.execute(q_insert_posto,d=data_prenotata, cf=cf_utente, ids=id_sala, idf=id_fascia, cod_prenotazione = creaIDprenotazione())
+                    print("ciao")
+            except:
+                raise
+        
+        #prenotazioni gia fatte x questo utente
+        q_lista_prenotazioni = text("SELECT p.data, p.id_sala, fs.id_fascia, p.codice_prenotazione, fs.inizio, fs.fine FROM prenotazioni p JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente" )
+        with engine.connect() as conn:
+           tab_prenotazioni_effettuate = conn.execute(q_lista_prenotazioni,id_utente=id)
 
 
         if 'modificavalori' in request.form and  request.form['modificavalori'] == "ModificaPermessi":
@@ -206,8 +227,9 @@ def profilo():
                 s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=3 OR p.ruolo=2 ")
                 lista_persone = conn.execute(s)
                 
-                return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo="capo")
+                return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo="capo", prenotazioni_effettuate=tab_prenotazioni_effettuate )
     
+   
 
     #queste tre righe sono di prova per vedere se effettivamente prende
     #qualcosa dal database, ma per ora non appare nulla. Le commento
@@ -283,7 +305,7 @@ def corsi():
                     
 
 
-                s = text("SELECT f.inizio,f.fine, sc.id_sala,tc.id_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
+                s = text("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
                         "FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia=f.id_fascia "
                         "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON pi.codice_fiscale =co.codice_fiscale_istruttore JOIN tipologie_corsi tc ON co.id_tipologia=tc.id_tipologia "
                         "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND sc.data = :input_data "
@@ -311,7 +333,7 @@ def corsi():
                 with engine.connect() as conn:
                     sale_libere = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
                 
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_libere , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab)
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_libere , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = Persone.get_id(current_user) )
         else:
             render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         
@@ -588,7 +610,16 @@ def creaIDtipologiaCorso():
         next_id = int(num_tipologie) + 1
         return next_id
 
+def creaIDprenotazione():
+     with engine.connect() as conn:
+        s = "SELECT COUNT(*) AS num_prenotazioni FROM prenotazioni"
+        res = conn.execute(s)
+        for row in res:
+            num_prenotazioni = row['num_prenotazioni']
+            break
 
+        next_id = int(num_prenotazioni) + 1
+        return next_id
 
 
 

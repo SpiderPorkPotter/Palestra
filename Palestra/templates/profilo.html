@@ -124,6 +124,18 @@
             {% endfor %}
         </tbody>
     </table>
+    
+    <h5>Prenotazioni effettuate : </h5>
+    <table class="table">
+        <th>Data</th> <th>Sala</th> <th>Dalle</th><th>Alle</th> <th>Codice Prenotazione</th>
+            {% for row in prenotazioni_effettuate %}
+                <tr>
+                    <td>{{row['data']}}</td><td>{{row['id_sala']}}</td><td>{{row['inizio']}}</td><td>{{row['fine']}}</td> <td>{{row['codice_prenotazione']}} </td>
+                </tr>
+            {% endfor %}
+        
+    </table>
+
 
     {% endif %}
 </div>
