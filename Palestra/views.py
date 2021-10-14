@@ -163,7 +163,7 @@ def registrazione():
 @login_required
 @app.route('/profilo', methods = ['POST','GET'])
 def profilo():
-
+    flash("Ecco il tuo profilo!")
     ruolo = ""
     #prendo l'id dell'utente corrente e le sue info
     if current_user != None:
@@ -184,10 +184,19 @@ def profilo():
                 q_insert_posto = text("INSERT INTO prenotazioni(data,codice_fiscale,id_sala,id_fascia, codice_prenotazione) VALUES(:d,:cf,:ids,:idf, :cod_prenotazione) ")
                 with engine.connect() as conn:
                     conn.execute(q_insert_posto,d=data_prenotata, cf=cf_utente, ids=id_sala, idf=id_fascia, cod_prenotazione = creaIDprenotazione())
-                    print("ciao")
+                    
             except:
                 raise
-        
+        #se è stata confermata la cancellazione cancella la prenotazione
+        try:
+            if "Conferma" in request.form and request.form['Conferma'] == "Conferma Cancellazione" and "id_prenotazione_key" in  request.form :
+               
+                q_cancellazione = text("DELETE FROM prenotazioni WHERE codice_prenotazione=:c ")
+                with engine.connect() as conn:
+                    conn.execute(q_cancellazione, c=request.form['id_prenotazione_key'])
+                    
+        except:
+            raise
         #prenotazioni gia fatte x questo utente
         q_lista_prenotazioni = text("SELECT p.data, p.id_sala, fs.id_fascia, p.codice_prenotazione, fs.inizio, fs.fine FROM prenotazioni p JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente" )
         with engine.connect() as conn:

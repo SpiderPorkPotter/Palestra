@@ -28,7 +28,7 @@
         </li>
     </ul>
     <hr />
-
+</div>
     <!-- poteri del boss
         dropdown template preso da qui:http://localhost:56500/profilo#-->
     {% if ruolo == 'capo' %}
@@ -74,7 +74,7 @@
     </table>
     {% endif %}
 
-    {% if ruolo == 'capo' %}
+    
     <h2> lista iscritti</h2>
     <!--ho commentato il form che era scritto prima perché i form non possono stare nelle tr
         Non dava problemi, perché comunque veniva renderizzato, però segnava comunque errore
@@ -124,23 +124,74 @@
             {% endfor %}
         </tbody>
     </table>
-    
+
     <h5>Prenotazioni effettuate : </h5>
     <table class="table">
         <th>Data</th> <th>Sala</th> <th>Dalle</th><th>Alle</th> <th>Codice Prenotazione</th>
             {% for row in prenotazioni_effettuate %}
                 <tr>
-                    <td>{{row['data']}}</td><td>{{row['id_sala']}}</td><td>{{row['inizio']}}</td><td>{{row['fine']}}</td> <td>{{row['codice_prenotazione']}} </td>
+                    <td>{{row['data']}}</td><td>{{row['id_sala']}}</td><td>{{row['inizio']}}</td><td>{{row['fine']}}</td> <td> {{row['codice_prenotazione']}} </td>
+                    <td>
+                        <!-- L'ide lo segna in rosso ma non da problemi -->
+                       <input type="button" class="btn btn-primary" onClick="apriDialog( {{ row['codice_prenotazione'] }} )" value='Cancella' > 
+                        
+                        
+                    </td>
                 </tr>
             {% endfor %}
         
     </table>
 
+    <script>
+         function apriDialog(savedValue){
+             console.log(savedValue)
+            var dialog = document.createElement("dialog")
+            dialog.style.left ="50%"
+            dialog.style.top = "50%"
+           dialog.style.transform = "translate(-50%,-50%)"
+           dialog.style.borderRadius = "5%"
+           
+            var p = document.createElement('p')
+            p.innerHTML = "Sei sicuro di voler cancellare la prenotazione?"
+            dialog.appendChild(p)
+            var f = document.createElement("form")
+            f.setAttribute("action", "/profilo")
+            f.setAttribute("method", "post")
+            
+            var b_hidden = document.createElement('input')
+            b_hidden.setAttribute("type","hidden")
+            b_hidden.setAttribute("name","id_prenotazione_key")
+            b_hidden.setAttribute("value",savedValue)
 
-    {% endif %}
-</div>
+            var b_conferma = document.createElement('input')
+            b_conferma.setAttribute("type","submit")
+            b_conferma.setAttribute("name","Conferma")
+            b_conferma.setAttribute("value","Conferma Cancellazione")
+            b_conferma.setAttribute("class", "btn btn-primary")
+            var b_annulla = document.createElement('input')
+            b_annulla.setAttribute("type","button")
+            b_annulla.setAttribute("value", "Annulla" )
+            b_annulla.setAttribute("class", "btn btn-primary")
+            b_annulla.addEventListener("click" ,function(){
+                dialog.close()
+            })
+            
+            
+            f.appendChild(b_annulla)
+            f.appendChild(b_hidden)
+            f.appendChild(b_conferma)
+            dialog.appendChild(f)
+            var body = document.getElementsByTagName("body")
+            body[0].appendChild(dialog)
+            dialog.show()
+            
+            return
+        }
+
+    </script>
 
 
-
+  
+    
 
     {% endblock %}
