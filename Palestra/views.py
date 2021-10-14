@@ -202,6 +202,14 @@ def profilo():
         with engine.connect() as conn:
            tab_prenotazioni_effettuate = conn.execute(q_lista_prenotazioni,id_utente=id)
 
+        #corsi creati da questo utente (istruttore)
+        q_corsi_creati = text("SELECT sc.data, c.id_corso, f.inizio , f.fine, c.nome_corso, tc.nome_tipologia "
+        " FROM corsi c JOIN sale_corsi sc ON sc.id_corso=c.id_corso JOIN fascia_oraria f ON sc.id_fascia= f.id_fascia JOIN tipologie_corsi tc ON c.id_tipologia = tc.id_tipologia " 
+        "  WHERE c.codice_fiscale_istruttore = :id_utente "
+        " ORDER BY sc.data, f.inizio ASC")
+        with engine.connect() as conn:
+           tab_corsi_creati = conn.execute(q_corsi_creati,id_utente=id)
+
 
         if 'modificavalori' in request.form and  request.form['modificavalori'] == "ModificaPermessi":
             cf_passato = request.form['id_passato']
@@ -236,7 +244,7 @@ def profilo():
                 s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=3 OR p.ruolo=2 ")
                 lista_persone = conn.execute(s)
                 
-                return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo="capo", prenotazioni_effettuate=tab_prenotazioni_effettuate )
+                return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo="capo", prenotazioni_effettuate=tab_prenotazioni_effettuate, tab_corsi_creati = tab_corsi_creati )
     
    
 
@@ -271,6 +279,7 @@ def corsi():
     tmp_data = data[2 : len(data) : ]
     data_for_DB = str(datetime.strptime(tmp_data,"%y %m %d")).split(' ')
     data_for_DB = data_for_DB[0]
+    id_utente = Persone.get_id(current_user)
     
     intGiorno_settimana = data_to_giorno_settimana(data_for_DB)
     is_ricerca_setted = request.method == 'POST' and "ricerca" in request.form and request.form['ricerca'] == "Cerca"
@@ -316,15 +325,18 @@ def corsi():
 
                 s = text("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
                         "FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia=f.id_fascia "
-                        "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON pi.codice_fiscale =co.codice_fiscale_istruttore JOIN tipologie_corsi tc ON co.id_tipologia=tc.id_tipologia "
+                        "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON (pi.codice_fiscale =co.codice_fiscale_istruttore AND co.codice_fiscale_istruttore <> :cf ) JOIN tipologie_corsi tc ON co.id_tipologia=tc.id_tipologia "
                         "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND sc.data = :input_data "
                         "AND s.posti_totali > (SELECT Count(*)AS numPrenotati " 
                                 "FROM prenotazioni pr JOIN sale_corsi sc1 ON (sc1.id_sala=sc.id_sala AND pr.id_sala= sc.id_sala) "
                                 "JOIN fascia_oraria f1 ON f1.id_fascia=f.id_fascia "
-                                "WHERE pr.data = :input_data) ")
+                                "WHERE pr.data = :input_data) "
+                        "AND pi.codice_fiscale  NOT IN (SELECT codice_fiscale FROM prenotazioni p WHERE p.data = sc.data AND p.id_fascia=sc.id_fascia) "
+                        
+                        )
                 try:
                     with engine.connect() as conn:
-                        corsi_liberi = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB )
+                        corsi_liberi = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB, cf= id_utente )
                 except:
                     raise
                 #if ruolo_utente == 2: # istruttore
@@ -333,7 +345,10 @@ def corsi():
                     "SELECT s.id_sala  , f1.inizio ,f1.fine ,f1.id_fascia, s.posti_totali "
                     "FROM sale s JOIN fascia_oraria f1 ON ( f1.inizio >= :oraInizio AND f1.fine <= :oraFine AND f1.giorno = :g ) "
                     "WHERE s.id_sala NOT IN (SELECT sc.id_sala FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia = f.id_fascia WHERE f1.id_fascia = f.id_fascia AND sc.data = :dataDB) "
+                    
                     "AND s.solo_attrezzi IS FALSE "
+                    
+                    
 					"GROUP BY s.id_sala , f1.id_fascia "
                     "ORDER BY f1.id_fascia "
                 )
@@ -342,7 +357,7 @@ def corsi():
                 with engine.connect() as conn:
                     sale_libere = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
                 
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_libere , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = Persone.get_id(current_user) )
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_libere , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente )
         else:
             render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         
