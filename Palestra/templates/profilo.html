@@ -2,11 +2,6 @@
 
 {% block content %}
 
-{% if ruolo != 'capo' %}
-<h2>{{ title }}</h2>
-{% else %}
-<h2>Profilo del boss</h2>
-{% endif %}
 
 <div class="container">
 
@@ -24,7 +19,7 @@
         </li>
         <li>
             <span class="field-name">Telefono:</span>
-            <span class="field-value">{{ dati_utente['cellulare'] }}</span>
+            <span class="field-value">{{ dati_utente['telefono'] }}</span>
         </li>
     </ul>
     <hr />
@@ -41,49 +36,17 @@
             <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
         </ul>
     </div>
-    {% endif %}
-
-    <!-- Tabella esempio in cui apparirebbero le prenotazioni attive
-        del proprio profilo-->
-    {% if ruolo != 'capo' %}
-    <h2>Prenotazioni attive [ESEMPIO]</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">Email</th>
-                <th scope="col">Nome</th>
-                <th scope="col">Cognome</th>
-                <th scope="col">istruttore</th>
-
-            </tr>
-        </thead>
-        <tbody>
-            <!--qua vengono inseriti i dati relativi alle varie prenotazioni.
-                appariranno in tabelle separate da una riga
-                dati_richiesti � il contenitore dei dati che viene passata da views
-                p serve a scorrerli e a stamparli-->
-            {% for p in dati_richiesti %}
-            <tr>
-                <td>{{p.email}}</td>
-                <td>{{p.nome}}</td>
-                <td>{{p.cognome}}</td>
-                <td>{{p.is_istruttore}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
-
     
+
     <h2> lista iscritti</h2>
     <!--ho commentato il form che era scritto prima perché i form non possono stare nelle tr
         Non dava problemi, perché comunque veniva renderizzato, però segnava comunque errore
         L'ho spostato fuori dalla tabella e collegato tutti gli input usando l'id del form
         e usando l'attributo "form" secondo quanto riportato qui:
         https://stackoverflow.com/questions/5967564/form-inside-a-table
+    -->
 
-        Non so se funziona perché non ho capito bene come viene gestito, quindi non
-        ho apportato ulteriori modifiche-->
+
     <form action="/profilo" id="form_tabella" method="POST"></form>
 
     <table class="table">
@@ -103,7 +66,7 @@
                 <td>{{ row['codice_fiscale'] }}</td>
                 <td>{{ row['nome'] }}</td>
                 <td>{{ row['cognome'] }}</td>
-                <td>{{ row['cellulare'] }}</td>
+                <td>{{ row['telefono'] }}</td>
 
                 
                 <td>
@@ -124,7 +87,9 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
 
+    {% if ruolo == 'istruttore' or ruolo == 'iscritto' %}
     <h5>Prenotazioni effettuate : </h5>
     <table class="table">
         <th>Data</th> <th>Sala</th> <th>Dalle</th><th>Alle</th> <th>Codice Prenotazione</th>
@@ -189,19 +154,19 @@
         }
 
     </script>
-
-
-    {% if tab_corsi_creati %}
-    <h5> Corsi creati :</h5>
-    <table class="table">
-        {% for row in tab_corsi_creati %}
-            <tr>     
-                <td>{{ row['data'] }}</td><td>{{ row['id_corso'] }}</td><td>{{ row['inizio'] }}</td><td>{{ row['fine'] }}</td><td>{{ row['nome_corso'] }}</td><td>{{ row['nome_tipologia'] }}</td>
-            </tr>
-        {% endfor %}
-    </table>
     {% endif %}
-  
+        {% if ruolo == 'istruttore' %}
+            {% if tab_corsi_creati %}
+            <h5> Corsi creati :</h5>
+            <table class="table">
+                {% for row in tab_corsi_creati %}
+                    <tr>     
+                        <td>{{ row['data'] }}</td><td>{{ row['id_corso'] }}</td><td>{{ row['inizio'] }}</td><td>{{ row['fine'] }}</td><td>{{ row['nome_corso'] }}</td><td>{{ row['nome_tipologia'] }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+    {% endif %}
     
 
     {% endblock %}

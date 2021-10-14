@@ -3,83 +3,87 @@
 {% block content %}
 
 <h3>{{ title }}</h3>
-
-<h2>Ricerca corsi in data: {{data}}</h2>
-<form id="settaggio_date_form" action="/corsi" method="POST">
-     
-    Ora iniziale :
-    <input type="time" name="ora_iniziale_ricerca">
-    <br>
-    Ora finale :
-    <input type="time" name="ora_finale_ricerca">
-    <br>
-    <input type="button" id="id_btn_giornoIntero" name="giornoIntero" value="Tutto Il Giorno">
-    <input type="hidden" name="dataSelezionata" value="{{data}}">
-    <br>
-    <input type="submit" name="ricerca" value="Cerca">
-</form>
-
-<script>
-    var settaggio_date_form = document.getElementById('settaggio_date_form')
-    var btn = document.getElementById('id_btn_giornoIntero')
-    btn.addEventListener("click", function() {
-       
-        var time_inputs_Arr = settaggio_date_form.querySelectorAll("input[type='time']")
-        time_inputs_Arr[0].setAttribute('value',"00:00")
-        time_inputs_Arr[1].setAttribute('value',"23:59")
-        return
-    })
-</script>
-
-
-
-<table class="table">
-    <th>Sala</th><th>Dalle</th><th>Alle</th><th>Tipologia</th><th>Tenuto da</th>
-    {% for row in info_corsi %}
-        <tr>
-            <td>Sala{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td> <td>{{row['nome_tipologia']}}</td> <td>{{row['nome_istruttore']}} {{row['cognome_istruttore']}}</td>
-            <td> <form action="profilo" method="post"> 
-                <input type="hidden" name="dataPrenotata" value="{{data}}"  >
-                <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
-                <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
-                <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
-                <input type="submit" name="prenotaCorso" value="Prenotati">
-            </form></td>    
-        </tr>    
-    {% endfor %}
-</table>
-
-
-<form action="/corsi" method="POST">
-    <table class="table">
-            <th>Dalle</th><th>Alle</th><th>Sala</th><th>Posti Totali</th>
-            {% for row  in sale_disp_con_fasce %}
-            <tr>
-                <td>{{row['inizio']}}</td><td>{{row['fine']}}</td><td>Sala {{row['id_sala']}}</td><td>{{row['posti_totali']}}</td>
-                <td> <input type="checkbox" name="fasceSaleSelezionate"  value="idfascia_{{row['id_fascia']}} idsala_{{row['id_sala']}}" > </td>
-            </tr>
-                
-
-            {% endfor %}
-    </table>
-    <table class="table">
-        <tr>
-            <td>Tipo del corso : 
-            <select name="tipologie">
-                {% for row in lista_tipologie_tab %}
-                <option value="{{row['id_tipologia']}}"> {{ row['nome_tipologia'] }}</option>
-                {% endfor %}
-            </select>
-            </td> 
-            <td> <input type="text" name ="nomeCorso" placeholder="nome del corso"> </td>
-         </tr>
-         <tr>
-           <td> <input type="submit" name ="inserimentoCorso" value="Inserisci il corso"> </td>
-        </tr>
+{% if data %}
+    <h2>Ricerca corsi in data: {{data}}</h2>
+    <form id="settaggio_date_form" action="/corsi" method="POST">
+        
+        Ora iniziale :
+        <input type="time" name="ora_iniziale_ricerca">
+        <br>
+        Ora finale :
+        <input type="time" name="ora_finale_ricerca">
+        <br>
+        <input type="button" id="id_btn_giornoIntero" name="giornoIntero" value="Tutto Il Giorno">
         <input type="hidden" name="dataSelezionata" value="{{data}}">
-    </table>
-</form>
+        <br>
+        <input type="submit" name="ricerca" value="Cerca">
+    </form>
 
+    <script>
+        var settaggio_date_form = document.getElementById('settaggio_date_form')
+        var btn = document.getElementById('id_btn_giornoIntero')
+        btn.addEventListener("click", function() {
+        
+            var time_inputs_Arr = settaggio_date_form.querySelectorAll("input[type='time']")
+            time_inputs_Arr[0].setAttribute('value',"00:00")
+            time_inputs_Arr[1].setAttribute('value',"23:59")
+            return
+        })
+    </script>
+
+
+    {% if ruolo == 'iscritto' or ruolo == 'istruttore' %}
+        <table class="table">
+            <th>Sala</th><th>Dalle</th><th>Alle</th><th>Tipologia</th><th>Tenuto da</th>
+            {% for row in info_corsi %}
+                <tr>
+                    <td>Sala{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td> <td>{{row['nome_tipologia']}}</td> <td>{{row['nome_istruttore']}} {{row['cognome_istruttore']}}</td>
+                    <td> <form action="profilo" method="post"> 
+                        <input type="hidden" name="dataPrenotata" value="{{data}}"  >
+                        <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
+                        <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
+                        <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
+                        <input type="submit" name="prenotaCorso" value="Prenotati">
+                    </form></td>    
+                </tr>    
+            {% endfor %}
+        </table>
+    {% endif %}
+    
+    {% if ruolo == 'istruttore' %}
+        <h5>Seleziona una o più sale</h5>
+        <form action="/corsi" method="POST">
+            <table class="table">
+                    <th>Dalle</th><th>Alle</th><th>Sala</th><th>Posti Totali</th>
+                    {% for row  in sale_disp_con_fasce %}
+                    <tr>
+                        <td>{{row['inizio']}}</td><td>{{row['fine']}}</td><td>Sala {{row['id_sala']}}</td><td>{{row['posti_totali']}}</td>
+                        <td> <input type="checkbox" name="fasceSaleSelezionate"  value="idfascia_{{row['id_fascia']}} idsala_{{row['id_sala']}}" > </td>
+                    </tr>
+                        
+
+                    {% endfor %}
+            </table>
+
+            <h5>Inserisci le informazioni relative al corso</h5>
+            <table class="table">
+                <tr>
+                    <td>Tipo del corso : 
+                    <select name="tipologie">
+                        {% for row in lista_tipologie_tab %}
+                        <option value="{{row['id_tipologia']}}"> {{ row['nome_tipologia'] }}</option>
+                        {% endfor %}
+                    </select>
+                    </td> 
+                    <td> <input type="text" name ="nomeCorso" placeholder="nome del corso"> </td>
+                </tr>
+                <tr>
+                <td> <input type="submit" name ="inserimentoCorso" value="Inserisci il corso"> </td>
+                </tr>
+                <input type="hidden" name="dataSelezionata" value="{{data}}">
+            </table>
+        </form>
+{%endif %}
 
 
 {% endblock %}

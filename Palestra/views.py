@@ -19,8 +19,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 import re
 import numpy
-
+#costanti utili
 nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
+RUOLI = ["adminDB", "capo", "istruttore", "iscritto" ]
+
 #psycopg2 è il driver che si usa per comunicare col database
 
 DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
@@ -69,10 +71,7 @@ class RegistrazioneForm(FlaskForm):
 @app.route('/')
 @app.route('/home')
 def home():
-
-
-
-
+    #TODO:DA FAREEEEEEEEEEEEEEEEEEEEE
     return render_template(
         'home.html',
         title='Home Page'
@@ -127,142 +126,129 @@ def registrazione():
         resdz = form.residenza.data
         citt = form.citta.data
 
-        #creo l'oggetto utente
-        nuovo_utente = Persone( nome = nom,
-                                cognome = cogn,
-                                email = em ,
-                                data_iscrizione = datetime.today(),
-                                codice_fiscale = codiceFisc,
-                                residenza = resdz,
-                                citta = citt,
-                                ruolo = 3  # RUOLI :  adminDB=0, capo=1, istruttore=2, iscritto=3 
-                               )
-        nuovo_utente.set_password(passwd)
+        persona_gia_presente = False
+        with engine.connect() as conn:
+            lista_persone =  conn.execute(text("SELECT codice_fiscale FROM persone " ))
+        for row in lista_persone:
+            if row['codice_fiscale'] == codiceFisc and persona_gia_presente == False:
+                persona_gia_presente = True
+        if persona_gia_presente == True :
+            flash("Sei gia iscritto? controlla meglio il tuo codice fiscale ")
+            
+        else:    
+            #creo l'oggetto utente
+            nuovo_utente = Persone( nome = nom,
+                                    cognome = cogn,
+                                    email = em ,
+                                    data_iscrizione = datetime.today(),
+                                    codice_fiscale = codiceFisc,
+                                    residenza = resdz,
+                                    citta = citt,
+                                    ruolo = 3  # RUOLI :  adminDB=0, capo=1, istruttore=2, iscritto=3 
+                                )
+            nuovo_utente.set_password(passwd)
 
-        info_nuovo_utente = InfoContatti(
-                    telefono = tel,
-                    descrizione = type_tel,
-                    codice_fiscale = codiceFisc,
-                    )
+            info_nuovo_utente = InfoContatti(
+                        telefono = tel,
+                        descrizione = type_tel,
+                        codice_fiscale = codiceFisc,
+                        )
 
+            
         
-       
-        db.session.add(nuovo_utente)
-        db.session.commit()
+            db.session.add(nuovo_utente)
+            db.session.commit()
 
-        db.session.add(info_nuovo_utente)
-        db.session.commit()
-           
+            db.session.add(info_nuovo_utente)
+            db.session.commit()
+            
 
-        flash('Registrazione completata')
-        return redirect('/login')
+            flash('Registrazione completata')
+            return redirect('/login')
 
     return render_template('registrazione.html', title = 'registrazione', form = form)
 
-#per ora la commento
+
 @login_required
 @app.route('/profilo', methods = ['POST','GET'])
 def profilo():
     flash("Ecco il tuo profilo!")
-    ruolo = ""
     #prendo l'id dell'utente corrente e le sue info
     if current_user != None:
         id = Persone.get_id(current_user)
+       
 
-        dati_utente_corrente = Persone.query.filter_by(codice_fiscale = id).first()
-        #se voglio il telefono devo fare un'altra query
-        if "prenotaCorso" in request.form and request.form['prenotaCorso'] == "Prenotati":
-            data_prenotata=request.form['dataPrenotata'].replace(" ", "-")
-            id_sala=request.form['idSala']
-            cf_utente=request.form['codiceFiscaleUtente']
-            id_fascia=request.form['idFascia']
-
-        #controllo se è disponibile un posto da fare con visa
+        ruolo =RUOLI[Persone.get_role(current_user)]
+        dati_utente_corrente = Persone.query.join(InfoContatti,Persone.codice_fiscale == InfoContatti.codice_fiscale).filter_by(codice_fiscale = id).first()
         
-        #inserisco il posto
+        if ruolo == "istruttore" or ruolo == "iscritto": #se è istruttore o iscritto
+ 
+            if "prenotaCorso" in request.form and request.form['prenotaCorso'] == "Prenotati":
+                data_prenotata=request.form['dataPrenotata'].replace(" ", "-")
+                id_sala=request.form['idSala']
+                cf_utente=request.form['codiceFiscaleUtente']
+                id_fascia=request.form['idFascia']
+
+            #controllo se è disponibile un posto da fare con visa
+            
+            #inserisco il posto
+                try:
+                    q_insert_posto = text("INSERT INTO prenotazioni(data,codice_fiscale,id_sala,id_fascia, codice_prenotazione) VALUES(:d,:cf,:ids,:idf, :cod_prenotazione) ")
+                    with engine.connect() as conn:
+                        conn.execute(q_insert_posto,d=data_prenotata, cf=cf_utente, ids=id_sala, idf=id_fascia, cod_prenotazione = creaIDprenotazione())
+                        
+                except:
+                    raise
+            #se è stata confermata la cancellazione cancella la prenotazione
             try:
-                q_insert_posto = text("INSERT INTO prenotazioni(data,codice_fiscale,id_sala,id_fascia, codice_prenotazione) VALUES(:d,:cf,:ids,:idf, :cod_prenotazione) ")
-                with engine.connect() as conn:
-                    conn.execute(q_insert_posto,d=data_prenotata, cf=cf_utente, ids=id_sala, idf=id_fascia, cod_prenotazione = creaIDprenotazione())
-                    
+                if "Conferma" in request.form and request.form['Conferma'] == "Conferma Cancellazione" and "id_prenotazione_key" in  request.form :
+                
+                    q_cancellazione = text("DELETE FROM prenotazioni WHERE codice_prenotazione=:c ")
+                    with engine.connect() as conn:
+                        conn.execute(q_cancellazione, c=request.form['id_prenotazione_key'])
+                        
             except:
                 raise
-        #se è stata confermata la cancellazione cancella la prenotazione
-        try:
-            if "Conferma" in request.form and request.form['Conferma'] == "Conferma Cancellazione" and "id_prenotazione_key" in  request.form :
-               
-                q_cancellazione = text("DELETE FROM prenotazioni WHERE codice_prenotazione=:c ")
+
+            #prenotazioni gia fatte x questo utente
+            q_lista_prenotazioni = text("SELECT p.data, p.id_sala, fs.id_fascia, p.codice_prenotazione, fs.inizio, fs.fine FROM prenotazioni p JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente" )
+            with engine.connect() as conn:
+                tab_prenotazioni_effettuate = conn.execute(q_lista_prenotazioni,id_utente=id)
+
+            if ruolo == "istruttore": # istruttore            
+            #corsi creati da questo istruttore
+                q_corsi_creati = text("SELECT sc.data, c.id_corso, f.inizio , f.fine, c.nome_corso, tc.nome_tipologia "
+                " FROM corsi c JOIN sale_corsi sc ON sc.id_corso=c.id_corso JOIN fascia_oraria f ON sc.id_fascia= f.id_fascia JOIN tipologie_corsi tc ON c.id_tipologia = tc.id_tipologia " 
+                "  WHERE c.codice_fiscale_istruttore = :id_utente "
+                " ORDER BY sc.data, f.inizio ASC")
                 with engine.connect() as conn:
-                    conn.execute(q_cancellazione, c=request.form['id_prenotazione_key'])
-                    
-        except:
-            raise
-        #prenotazioni gia fatte x questo utente
-        q_lista_prenotazioni = text("SELECT p.data, p.id_sala, fs.id_fascia, p.codice_prenotazione, fs.inizio, fs.fine FROM prenotazioni p JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente" )
-        with engine.connect() as conn:
-           tab_prenotazioni_effettuate = conn.execute(q_lista_prenotazioni,id_utente=id)
+                    tab_corsi_creati = conn.execute(q_corsi_creati,id_utente=id)
+            return render_template("profilo.html",title="profilo", dati_utente = dati_utente_corrente, ruolo=ruolo, prenotazioni_effettuate=tab_prenotazioni_effettuate, tab_corsi_creati = tab_corsi_creati)
 
-        #corsi creati da questo utente (istruttore)
-        q_corsi_creati = text("SELECT sc.data, c.id_corso, f.inizio , f.fine, c.nome_corso, tc.nome_tipologia "
-        " FROM corsi c JOIN sale_corsi sc ON sc.id_corso=c.id_corso JOIN fascia_oraria f ON sc.id_fascia= f.id_fascia JOIN tipologie_corsi tc ON c.id_tipologia = tc.id_tipologia " 
-        "  WHERE c.codice_fiscale_istruttore = :id_utente "
-        " ORDER BY sc.data, f.inizio ASC")
-        with engine.connect() as conn:
-           tab_corsi_creati = conn.execute(q_corsi_creati,id_utente=id)
-
-
-        if 'modificavalori' in request.form and  request.form['modificavalori'] == "ModificaPermessi":
-            cf_passato = request.form['id_passato']
-            nome_radio_button = cf_passato + "_radio"
-            v = request.form[nome_radio_button]
-            print(v)
-            if v == "istruttore":
-                with engine.connect() as conn:
-                    s = text("UPDATE persone SET ruolo = 2 WHERE codice_fiscale = :cf")
-                    conn.execute(s,cf=cf_passato)
-                #query update da iscritto a istruttore dopo averla fatta levare l'isstruzione "pass"
-               
-            if v == "iscritto":
-                with engine.connect() as conn:
-                    s = text("UPDATE persone SET ruolo = 3 WHERE codice_fiscale = :cf")
-                    conn.execute(s,cf=cf_passato)
-                #query update da istruttore passa a iscritto dopo averla fatta levare l'isstruzione "pass"
-                
-
-        #prendo gli id di tutti i capi
-        s = text("SELECT codice_fiscale FROM persone  WHERE ruolo=1 AND codice_fiscale=:id_c")
-        with engine.connect() as conn:
-            dati_capi = conn.execute(s,id_c=id)
-            #creo una lista fatta da tutti gli id dei capi
-            ids_capi=[]
-            for d in dati_capi:
-               ids_capi.append(d['codice_fiscale'])
+        if ruolo == "capo": # se è il capo
+            #puo fare upgrade da iscritto a istruttore
+            if 'modificavalori' in request.form and  request.form['modificavalori'] == "ModificaPermessi":
+                cf_passato = request.form['id_passato']
+                nome_radio_button = cf_passato + "_radio"
+                v = request.form[nome_radio_button]
+                print(v)
+                if v == "istruttore":
+                    with engine.connect() as conn:
+                        s = text("UPDATE persone SET ruolo = 2 WHERE codice_fiscale = :cf")
+                        conn.execute(s,cf=cf_passato)
+                if v == "iscritto":
+                    with engine.connect() as conn:
+                        s = text("UPDATE persone SET ruolo = 3 WHERE codice_fiscale = :cf")
+                        conn.execute(s,cf=cf_passato)
             
-            #se l'id è nella lista dei capi stampo tutti gli iscritti
-            if id in ids_capi:
-
+            with engine.connect() as conn:
                 s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=3 OR p.ruolo=2 ")
                 lista_persone = conn.execute(s)
-                
-                return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo="capo", prenotazioni_effettuate=tab_prenotazioni_effettuate, tab_corsi_creati = tab_corsi_creati )
-    
+                    
+            return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo=ruolo )
+    else :
+        return render_template("registrazione.html", title="registrazione")
    
-
-    #queste tre righe sono di prova per vedere se effettivamente prende
-    #qualcosa dal database, ma per ora non appare nulla. Le commento
-   # user = Persone.query.filter_by(codice_fiscale = id).first()
-   # a = current_user.nome
-   # print(a)
-
-   #queste due sotto sono quelle che dovrebbero funzionare bene
-   #creo l'oggetto utente filtrandolo per il suo id (preso sopra)
-   #dati_richiesti è la tabella con i dati che poi viene mostrata in profilo.html
-    return render_template(
-        'profilo.html',
-        dati_utente = dati_utente_corrente,
-        title = 'Il mio profilo',
-        ruolo = "iscritto"
-        )
 
 
 @login_required
@@ -306,67 +292,52 @@ def corsi():
                         conn.execute(prep_query, ids=id_sala, idc=nuovo_id_corso, d= data_for_DB, idf=id_fascia)
                         
             except:
-                raise
                 flash("Aia! sembra che qualcuno ti abbia preceduto, rifai l'operazione")
 
         if is_ricerca_setted :
             if current_user != None and "ora_iniziale_ricerca" in request.form and "ora_finale_ricerca" in request.form:
-                ruolo_utente = Persone.get_role(current_user)
+                ruolo = RUOLI[Persone.get_role(current_user)]
                 input_ora_inizio = request.form['ora_iniziale_ricerca']
                 input_ora_fine = request.form['ora_finale_ricerca']
 
-                #if ruolo_utente == 2 or ruolo_utente == 1 #ricerca corsi disponibili
-                q_lista_tipologie = text("SELECT id_tipologia, nome_tipologia FROM tipologie_corsi ")
-                with engine.connect() as conn:
-                    lista_tipologie_tab = conn.execute(q_lista_tipologie)
-                    
-                    
-
-
-                s = text("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
-                        "FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia=f.id_fascia "
-                        "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON (pi.codice_fiscale =co.codice_fiscale_istruttore AND co.codice_fiscale_istruttore <> :cf ) JOIN tipologie_corsi tc ON co.id_tipologia=tc.id_tipologia "
-                        "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND sc.data = :input_data "
-                        "AND s.posti_totali > (SELECT Count(*)AS numPrenotati " 
-                                "FROM prenotazioni pr JOIN sale_corsi sc1 ON (sc1.id_sala=sc.id_sala AND pr.id_sala= sc.id_sala) "
-                                "JOIN fascia_oraria f1 ON f1.id_fascia=f.id_fascia "
-                                "WHERE pr.data = :input_data) "
-                        "AND pi.codice_fiscale  NOT IN (SELECT codice_fiscale FROM prenotazioni p WHERE p.data = sc.data AND p.id_fascia=sc.id_fascia) "
-                        
-                        )
-                try:
+                if ruolo == "iscritto" or ruolo == "istruttore": #ricerca corsi disponibili
+                    q_lista_tipologie = text("SELECT id_tipologia, nome_tipologia FROM tipologie_corsi ")
                     with engine.connect() as conn:
-                        corsi_liberi = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB, cf= id_utente )
-                except:
-                    raise
-                #if ruolo_utente == 2: # istruttore
+                        lista_tipologie_tab = conn.execute(q_lista_tipologie)
+                        
+                    s = text("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
+                            "FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia=f.id_fascia "
+                            "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON (pi.codice_fiscale =co.codice_fiscale_istruttore AND co.codice_fiscale_istruttore <> :cf ) JOIN tipologie_corsi tc ON co.id_tipologia=tc.id_tipologia "
+                            "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND sc.data = :input_data "
+                            "AND s.posti_totali > (SELECT Count(*)AS numPrenotati " 
+                                    "FROM prenotazioni pr JOIN sale_corsi sc1 ON (sc1.id_sala=sc.id_sala AND pr.id_sala= sc.id_sala) "
+                                    "JOIN fascia_oraria f1 ON f1.id_fascia=f.id_fascia "
+                                    "WHERE pr.data = :input_data) "
+                            "AND pi.codice_fiscale  NOT IN (SELECT codice_fiscale FROM prenotazioni p WHERE p.data = sc.data AND p.id_fascia=sc.id_fascia) "
+                            
+                            )
+                    try:
+                        with engine.connect() as conn:
+                            corsi_liberi = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB, cf= id_utente )
+                    except:
+                        raise
+                if ruolo == "istruttore": 
                
-                q_sale_libere = text(
-                    "SELECT s.id_sala  , f1.inizio ,f1.fine ,f1.id_fascia, s.posti_totali "
-                    "FROM sale s JOIN fascia_oraria f1 ON ( f1.inizio >= :oraInizio AND f1.fine <= :oraFine AND f1.giorno = :g ) "
-                    "WHERE s.id_sala NOT IN (SELECT sc.id_sala FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia = f.id_fascia WHERE f1.id_fascia = f.id_fascia AND sc.data = :dataDB) "
-                    
-                    "AND s.solo_attrezzi IS FALSE "
-                    
-                    
-					"GROUP BY s.id_sala , f1.id_fascia "
-                    "ORDER BY f1.id_fascia "
-                )
-               
-
-                with engine.connect() as conn:
-                    sale_libere = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
+                    q_sale_libere = text(
+                        "SELECT s.id_sala  , f1.inizio ,f1.fine ,f1.id_fascia, s.posti_totali "
+                        "FROM sale s JOIN fascia_oraria f1 ON ( f1.inizio >= :oraInizio AND f1.fine <= :oraFine AND f1.giorno = :g ) "
+                        "WHERE s.id_sala NOT IN (SELECT sc.id_sala FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia = f.id_fascia WHERE f1.id_fascia = f.id_fascia AND sc.data = :dataDB) "
+                        "AND s.solo_attrezzi IS FALSE "
+                        "GROUP BY s.id_sala , f1.id_fascia "
+                        "ORDER BY f1.id_fascia "
+                    )
+                    with engine.connect() as conn:
+                        sale_libere = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
                 
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo_utente = ruolo_utente, sale_disp_con_fasce =sale_libere , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente )
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo, sale_disp_con_fasce =sale_libere , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente )
         else:
             render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         
-        
-        
-        # SE VOGLIO USARE GET USO QUESTA SINTASSI : data = request.args.get('dataSelezionata', '')
-        # da fare query dei corsi in quella 'data'
-        ruolo_utente =100   # da levare
-        return render_template( 'corsi.html',title='Corsi Disponibili', data = data, livelloUtente = ruolo_utente)
     else: 
         return render_template( 'corsi.html',title='Corsi Disponibili' )
 
