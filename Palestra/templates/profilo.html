@@ -28,65 +28,53 @@
         dropdown template preso da qui:http://localhost:56500/profilo#-->
     {% if ruolo == 'capo' %}
 
-    <div>
-        <h3>Poteri Del Capo (link provvisori)</h3> 
-        <ul>
-            <li><a href="{{ url_for('corsi') }}">corsi</a></li>
-            <li><a href="{{ url_for('policy_occupazione') }}">Policy occupazione</a></li>
-            <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
-        </ul>
-    </div>
-    
+        <div>
+            <h3>Poteri Del Capo (link provvisori)</h3> 
+            <ul>
+                <li><a href="{{ url_for('corsi') }}">corsi</a></li>
+                <li><a href="{{ url_for('policy_occupazione') }}">Policy occupazione</a></li>
+                <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
+            </ul>
+        </div>
+        
 
-    <h2> lista iscritti</h2>
-    <!--ho commentato il form che era scritto prima perché i form non possono stare nelle tr
-        Non dava problemi, perché comunque veniva renderizzato, però segnava comunque errore
-        L'ho spostato fuori dalla tabella e collegato tutti gli input usando l'id del form
-        e usando l'attributo "form" secondo quanto riportato qui:
-        https://stackoverflow.com/questions/5967564/form-inside-a-table
-    -->
-
-
-    <form action="/profilo" id="form_tabella" method="POST"></form>
-
-    <table class="table">
-        <thead class="thead-dark">
-            <tr>
-                <th scope="col">Codice Fiscale</th>
-                <th scope="col">Nome</th>
-                <th scope="col">Cognome</th>
-                <th scope="col">Telefono</th>
-                <th scope="col">Istruttore</th>
-                <th scope="col">Iscritto</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in lista_persone %}
-            <tr>
-                <td>{{ row['codice_fiscale'] }}</td>
-                <td>{{ row['nome'] }}</td>
-                <td>{{ row['cognome'] }}</td>
-                <td>{{ row['telefono'] }}</td>
-
+        <h2> lista iscritti</h2>
+             <table class="table">
                 
-                <td>
-                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella" value="istruttore"
-                           {% if row['ruolo']==2 %} checked {% endif %}> istruttore
-                </td>
-
-                <td>
-                    <input type="radio" name="{{ row['codice_fiscale'] }}_radio" form="form_tabella"
-                           {% if row['ruolo']==3 %} checked {% endif %} value="iscritto"> iscritto
-                </td>
-                <td>
-                    <input type="hidden" name="id_passato" value="{{ row['codice_fiscale'] }}" form="form_tabella">
-                </td>
-                <td><input type="submit" name="modificavalori" class="btn btn-primary" form="form_tabella" value="ModificaPermessi"> </td>
-                
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                <tr>
+                    <th scope="col">Codice Fiscale</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Cognome</th>
+                    <th scope="col">Telefono</th>
+                    <th scope="col">Potere</th>
+                    
+                </tr>
+            
+            
+                {% for row in lista_persone %}
+                    <tr>
+                        <td>{{ row['codice_fiscale'] }}</td>
+                        <td>{{ row['nome'] }}</td>
+                        <td>{{ row['cognome'] }}</td>
+                        <td>{{ row['telefono'] }}</td>
+                        <td>
+                            <form action="/profilo" method="POST">
+                                <input type="radio" name="{{ row['codice_fiscale'] }}_radio"
+                                    {% if row['ruolo'] == 2 %} checked {% endif %} value="istruttore"> istruttore
+                                <br>
+                                <input type="radio" name="{{ row['codice_fiscale'] }}_radio"
+                                    {% if row['ruolo'] == 3 %} checked {% endif %} value="iscritto"> iscritto
+                                
+                                <input type="hidden" name="id_passato" value="{{ row['codice_fiscale'] }}" >
+                                <input type="submit" name="modificavalori" class="btn btn-primary"  value="ModificaPermessi">
+                        </form>
+                    </td>
+                        
+                    </tr>
+                    {% endfor %}
+               
+            </table>
+        
     {% endif %}
 
     {% if ruolo == 'istruttore' or ruolo == 'iscritto' %}
@@ -160,8 +148,17 @@
             <h5> Corsi creati :</h5>
             <table class="table">
                 {% for row in tab_corsi_creati %}
-                    <tr>     
+                    <tr> 
                         <td>{{ row['data'] }}</td><td>{{ row['id_corso'] }}</td><td>{{ row['inizio'] }}</td><td>{{ row['fine'] }}</td><td>{{ row['nome_corso'] }}</td><td>{{ row['nome_tipologia'] }}</td>
+                        <td>
+                            <form action="/profilo" method="post">
+                                <input type="hidden" name="id_sala" value="{{row['id_sala']}}" >
+                                <input type="hidden" name="dataCorso" value="{{row['data']}}" >
+                                <input type="hidden" name="id_fascia" value="{{row['id_fascia']}}" >
+                                <input type="hidden" name="id_corso_da_cancellare" value="{{ row['id_corso'] }}" >
+                                <input type="submit" name="cancellaCorso" value="Cancella Questo Corso">
+                            </form>
+                        </td>
                     </tr>
                 {% endfor %}
             </table>

@@ -34,7 +34,10 @@
 
     {% if ruolo == 'iscritto' or ruolo == 'istruttore' %}
         <table class="table">
-            <th>Sala</th><th>Dalle</th><th>Alle</th><th>Tipologia</th><th>Tenuto da</th>
+            <caption>CORSI DISPONIBILI </caption>
+            <tr>
+                <th>Sala</th><th>Dalle</th><th>Alle</th><th>Tipologia</th><th>Tenuto da</th><th></th>
+            </tr>
             {% for row in info_corsi %}
                 <tr>
                     <td>Sala{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td> <td>{{row['nome_tipologia']}}</td> <td>{{row['nome_istruttore']}} {{row['cognome_istruttore']}}</td>
@@ -51,14 +54,14 @@
     {% endif %}
     
     {% if ruolo == 'istruttore' %}
-        <h5>Seleziona una o più sale</h5>
+        <caption> CREA UN CORSO </caption>
         <form action="/corsi" method="POST">
             <table class="table">
                     <th>Dalle</th><th>Alle</th><th>Sala</th><th>Posti Totali</th>
                     {% for row  in sale_disp_con_fasce %}
                     <tr>
                         <td>{{row['inizio']}}</td><td>{{row['fine']}}</td><td>Sala {{row['id_sala']}}</td><td>{{row['posti_totali']}}</td>
-                        <td> <input type="checkbox" name="fasceSaleSelezionate"  value="idfascia_{{row['id_fascia']}} idsala_{{row['id_sala']}}" > </td>
+                        <td> <input  type="radio"  name="nomeRadioIdFascia {{row['id_fascia']}}" value="idfascia_{{row['id_fascia']}} idsala_{{row['id_sala']}}"> </td>
                     </tr>
                         
 
@@ -83,6 +86,7 @@
                 <input type="hidden" name="dataSelezionata" value="{{data}}">
             </table>
         </form>
+        {% endif %}
 {%endif %}
 
 

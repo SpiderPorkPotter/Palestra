@@ -108,8 +108,6 @@ def login():
 def registrazione():
     #si basa sulla classe definita sopra
     form = RegistrazioneForm()
-    
-
     #if form.validate_on_submit():
     if request.method == 'POST':
         
@@ -176,11 +174,9 @@ def profilo():
     #prendo l'id dell'utente corrente e le sue info
     if current_user != None:
         id = Persone.get_id(current_user)
-       
-
         ruolo =RUOLI[Persone.get_role(current_user)]
         dati_utente_corrente = Persone.query.join(InfoContatti,Persone.codice_fiscale == InfoContatti.codice_fiscale).filter_by(codice_fiscale = id).first()
-        
+        print(ruolo)
         if ruolo == "istruttore" or ruolo == "iscritto": #se è istruttore o iscritto
  
             if "prenotaCorso" in request.form and request.form['prenotaCorso'] == "Prenotati":
@@ -210,6 +206,25 @@ def profilo():
             except:
                 raise
 
+            #CANCELLA IL CORSO
+                
+            if request.method == "POST" and "cancellaCorso" in request.form:
+                try:
+                    id_corso = request.form['id_corso_da_cancellare']
+                    dataCorso = request.form['dataCorso'] 
+                    id_fascia = request.form['id_fascia']
+                    id_sala = request.form['id_sala']
+                    with engine.connect() as conn:
+                        
+                        s = text("DELETE FROM prenotazioni WHERE data = :data AND id_sala = :ids AND id_fascia = :idf")
+                        conn.execute(s, data = dataCorso, ids = id_sala, idf=id_fascia)
+                        s = text("DELETE FROM sale_corsi WHERE id_corso = :idc AND id_sala = :ids AND data = :data ")
+                        conn.execute(s,idc=id_corso,ids = id_sala , data = dataCorso )
+                        s = text("DELETE FROM corsi WHERE id_corso = :idc")
+                        conn.execute(s,idc=id_corso)
+                except: 
+                    raise
+
             #prenotazioni gia fatte x questo utente
             q_lista_prenotazioni = text("SELECT p.data, p.id_sala, fs.id_fascia, p.codice_prenotazione, fs.inizio, fs.fine FROM prenotazioni p JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente" )
             with engine.connect() as conn:
@@ -217,34 +232,37 @@ def profilo():
 
             if ruolo == "istruttore": # istruttore            
             #corsi creati da questo istruttore
-                q_corsi_creati = text("SELECT sc.data, c.id_corso, f.inizio , f.fine, c.nome_corso, tc.nome_tipologia "
+                q_corsi_creati = text("SELECT sc.data, c.id_corso, f.inizio , f.fine, c.nome_corso, tc.nome_tipologia, f.id_fascia, sc.id_sala "
                 " FROM corsi c JOIN sale_corsi sc ON sc.id_corso=c.id_corso JOIN fascia_oraria f ON sc.id_fascia= f.id_fascia JOIN tipologie_corsi tc ON c.id_tipologia = tc.id_tipologia " 
                 "  WHERE c.codice_fiscale_istruttore = :id_utente "
                 " ORDER BY sc.data, f.inizio ASC")
                 with engine.connect() as conn:
                     tab_corsi_creati = conn.execute(q_corsi_creati,id_utente=id)
-            return render_template("profilo.html",title="profilo", dati_utente = dati_utente_corrente, ruolo=ruolo, prenotazioni_effettuate=tab_prenotazioni_effettuate, tab_corsi_creati = tab_corsi_creati)
 
+                
+            if ruolo == "istruttore": # istruttore       
+                return render_template("profilo.html",title="profilo", dati_utente = dati_utente_corrente, ruolo=ruolo, prenotazioni_effettuate=tab_prenotazioni_effettuate, tab_corsi_creati = tab_corsi_creati)
+            if ruolo == "iscritto":
+                return render_template("profilo.html",title="profilo", dati_utente = dati_utente_corrente, ruolo=ruolo, prenotazioni_effettuate=tab_prenotazioni_effettuate)
         if ruolo == "capo": # se è il capo
-            #puo fare upgrade da iscritto a istruttore
+            #puo fare upgrade da iscritto a istruttore e viceversa
             if 'modificavalori' in request.form and  request.form['modificavalori'] == "ModificaPermessi":
                 cf_passato = request.form['id_passato']
                 nome_radio_button = cf_passato + "_radio"
                 v = request.form[nome_radio_button]
                 print(v)
-                if v == "istruttore":
-                    with engine.connect() as conn:
-                        s = text("UPDATE persone SET ruolo = 2 WHERE codice_fiscale = :cf")
+                with engine.connect() as conn:
+                    if v == "istruttore":
+                        s = text("UPDATE persone SET ruolo = 2 WHERE codice_fiscale = :cf AND ruolo <> '2'")
                         conn.execute(s,cf=cf_passato)
-                if v == "iscritto":
-                    with engine.connect() as conn:
-                        s = text("UPDATE persone SET ruolo = 3 WHERE codice_fiscale = :cf")
+                    elif v == "iscritto":
+                        s = text("UPDATE persone SET ruolo = 3 WHERE codice_fiscale = :cf AND ruolo <> '3' " )
                         conn.execute(s,cf=cf_passato)
             
             with engine.connect() as conn:
-                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=3 OR p.ruolo=2 ")
+                s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo='3' OR p.ruolo='2' ORDER BY p.ruolo ")
                 lista_persone = conn.execute(s)
-                    
+                  
             return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo=ruolo )
     else :
         return render_template("registrazione.html", title="registrazione")
@@ -266,37 +284,54 @@ def corsi():
     data_for_DB = str(datetime.strptime(tmp_data,"%y %m %d")).split(' ')
     data_for_DB = data_for_DB[0]
     id_utente = Persone.get_id(current_user)
-    
+    ruolo = RUOLI[Persone.get_role(current_user)]
     intGiorno_settimana = data_to_giorno_settimana(data_for_DB)
+
     is_ricerca_setted = request.method == 'POST' and "ricerca" in request.form and request.form['ricerca'] == "Cerca"
+
     if "dataSelezionata" in request.form:
+        if ruolo == "istruttore":
+            #INSERIMENTO DEL CORSO
+            if request.method == 'POST'and "inserimentoCorso" in request.form and request.form['inserimentoCorso'] == "Inserisci il corso":
+                nome_lista_delle_fasce = []
+                for namesID in request.form:
+                   if re.match('nomeRadioIdFascia [0-9]*',namesID):
+                       nome_lista_delle_fasce.append(namesID)
+                if nome_lista_delle_fasce:
+                    for e in nome_lista_delle_fasce:
+                        v = request.form[e]
+                        try:
+                            print(v)
+                            id_tipologia_corso = request.form['tipologie']
+                            nome_corso = request.form['nomeCorso']
+                            nuovo_id_corso = creaIDcorso()
+                            idfascia_e_id_sala = v.split(' ')
+                            id_fascia = idfascia_e_id_sala[0].split('_')[1]
+                            id_sala = idfascia_e_id_sala[1].split('_')[1]
+                            print(id_fascia )
+                            print(id_sala )
+                            with engine.connect() as conn :
+                                prep_query2 = text("INSERT INTO corsi( id_corso, nome_corso, codice_fiscale_istruttore , id_tipologia) VALUES( :idc , :nc ,:cfi, :idt)")
+                                conn.execute(prep_query2, idc = nuovo_id_corso , nc=nome_corso , cfi= id_utente, idt=id_tipologia_corso )
+                                prep_query = text("INSERT INTO sale_corsi(id_sala, id_corso, data, id_fascia) VALUES(:ids , :idc , :d , :idf)")
+                                conn.execute(prep_query, ids=id_sala, idc=nuovo_id_corso, d= data_for_DB, idf=id_fascia)
+                            
+                        except:
+                            flash("Aia! sembra che qualcuno ti abbia preceduto, rifai l'operazione")
+                        else:
+                            flash("inserimento riuscito!")
+                else : 
+                    flash("seleziona almeno una fascia oraria!")                       
+                       
+                              
+                
 
-        if request.method == 'POST'and "inserimentoCorso" in request.form and request.form['inserimentoCorso'] == "Inserisci il corso" and "fasceSaleSelezionate" in request.form:
-            checkboxes_inputs = request.form.getlist("fasceSaleSelezionate")
-            #sintassi del valore della singola checkbox "idfascia_{{row['id_fascia']}} idsala_{{row['id_sala']}}"
-            try:
-                id_tipologia_corso = request.form['tipologie']
-                nome_corso = request.form['nomeCorso']
-
-                cf_istruttore = Persone.get_id(current_user)
-                for e in checkboxes_inputs:
-                    nuovo_id_corso = creaIDcorso()
-                    idfascia_e_id_sala = e.split(' ')
-                    id_fascia = idfascia_e_id_sala[0].split('_')[1]
-                    id_sala = idfascia_e_id_sala[1].split('_')[1]
-                    with engine.connect() as conn :
-                        prep_query2 = text("INSERT INTO corsi( id_corso, nome_corso, codice_fiscale_istruttore , id_tipologia) VALUES( :idc , :nc ,:cfi, :idt)")
-                        conn.execute(prep_query2, idc = nuovo_id_corso , nc=nome_corso , cfi= cf_istruttore, idt=id_tipologia_corso )
-
-                        prep_query = text("INSERT INTO sale_corsi(id_sala, id_corso, data, id_fascia) VALUES(:ids , :idc , :d , :idf)")
-                        conn.execute(prep_query, ids=id_sala, idc=nuovo_id_corso, d= data_for_DB, idf=id_fascia)
-                        
-            except:
-                flash("Aia! sembra che qualcuno ti abbia preceduto, rifai l'operazione")
+                
+                
 
         if is_ricerca_setted :
             if current_user != None and "ora_iniziale_ricerca" in request.form and "ora_finale_ricerca" in request.form:
-                ruolo = RUOLI[Persone.get_role(current_user)]
+                
                 input_ora_inizio = request.form['ora_iniziale_ricerca']
                 input_ora_fine = request.form['ora_finale_ricerca']
 
@@ -305,7 +340,7 @@ def corsi():
                     with engine.connect() as conn:
                         lista_tipologie_tab = conn.execute(q_lista_tipologie)
                         
-                    s = text("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
+                        s = text("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
                             "FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia=f.id_fascia "
                             "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON (pi.codice_fiscale =co.codice_fiscale_istruttore AND co.codice_fiscale_istruttore <> :cf ) JOIN tipologie_corsi tc ON co.id_tipologia=tc.id_tipologia "
                             "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND sc.data = :input_data "
@@ -313,8 +348,9 @@ def corsi():
                                     "FROM prenotazioni pr JOIN sale_corsi sc1 ON (sc1.id_sala=sc.id_sala AND pr.id_sala= sc.id_sala) "
                                     "JOIN fascia_oraria f1 ON f1.id_fascia=f.id_fascia "
                                     "WHERE pr.data = :input_data) "
-                            "AND pi.codice_fiscale  NOT IN (SELECT codice_fiscale FROM prenotazioni p WHERE p.data = sc.data AND p.id_fascia=sc.id_fascia) "
                             
+                            
+                            "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data) "
                             )
                     try:
                         with engine.connect() as conn:
@@ -328,15 +364,15 @@ def corsi():
                         "FROM sale s JOIN fascia_oraria f1 ON ( f1.inizio >= :oraInizio AND f1.fine <= :oraFine AND f1.giorno = :g ) "
                         "WHERE s.id_sala NOT IN (SELECT sc.id_sala FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia = f.id_fascia WHERE f1.id_fascia = f.id_fascia AND sc.data = :dataDB) "
                         "AND s.solo_attrezzi IS FALSE "
-                        "GROUP BY s.id_sala , f1.id_fascia "
+                        "GROUP BY  s.id_sala, f1.id_fascia "
                         "ORDER BY f1.id_fascia "
                     )
                     with engine.connect() as conn:
-                        sale_libere = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
+                        sale_disp_con_fasce = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
                 
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo, sale_disp_con_fasce =sale_libere , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente )
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo, sale_disp_con_fasce =sale_disp_con_fasce , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente )
         else:
-            render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
+           return  render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         
     else: 
         return render_template( 'corsi.html',title='Corsi Disponibili' )
@@ -570,8 +606,6 @@ def creaIDsala():
         return next_id
 
 def data_to_giorno_settimana(dataString):
-    print("la datastring")
-    print(dataString)
     arr = []
     arr = dataString.split('-')
     giorno = arr[2]
