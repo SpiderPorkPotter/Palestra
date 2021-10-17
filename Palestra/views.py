@@ -187,7 +187,7 @@ def profilo():
 
             #controllo se è disponibile un posto da fare con visa
             
-            #inserisco il posto
+            #inserisco il posto x il corso
                 try:
                     q_insert_posto = text("INSERT INTO prenotazioni(data,codice_fiscale,id_sala,id_fascia, codice_prenotazione) VALUES(:d,:cf,:ids,:idf, :cod_prenotazione) ")
                     with engine.connect() as conn:
@@ -195,6 +195,22 @@ def profilo():
                         
                 except:
                     raise
+            #prenotazione della sala pesi
+            if "prenotaSalaPesi" in request.form and request.form['prenotaSalaPesi'] == "Prenotati":
+                data_prenotata=request.form['dataPrenotata'].replace(" ", "-")
+                id_sala=request.form['idSala']
+                cf_utente=request.form['codiceFiscaleUtente']
+                id_fascia=request.form['idFascia']
+                #inserisco il posto x il corso
+                try:
+                    q_insert_posto = text("INSERT INTO prenotazioni(data,codice_fiscale,id_sala,id_fascia, codice_prenotazione) VALUES(:d,:cf,:ids,:idf, :cod_prenotazione) ")
+                    with engine.connect() as conn:
+                        conn.execute(q_insert_posto,d=data_prenotata, cf=cf_utente, ids=id_sala, idf=id_fascia, cod_prenotazione = creaIDprenotazione())
+                        
+                except:
+                    raise
+            
+
             #se è stata confermata la cancellazione cancella la prenotazione
             try:
                 if "Conferma" in request.form and request.form['Conferma'] == "Conferma Cancellazione" and "id_prenotazione_key" in  request.form :
@@ -226,7 +242,9 @@ def profilo():
                     raise
 
             #prenotazioni gia fatte x questo utente
-            q_lista_prenotazioni = text("SELECT p.data, p.id_sala, fs.id_fascia, p.codice_prenotazione, fs.inizio, fs.fine FROM prenotazioni p JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente" )
+            q_lista_prenotazioni = text("SELECT p.data, p.id_sala, fs.id_fascia, p.codice_prenotazione, fs.inizio, fs.fine, "
+                                    "CASE WHEN s.solo_attrezzi is TRUE THEN 'Pesi' ELSE 'Corso' END tipo_sala "
+                                    "FROM prenotazioni p JOIN sale s ON p.id_sala = s.id_sala JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente" )
             with engine.connect() as conn:
                 tab_prenotazioni_effettuate = conn.execute(q_lista_prenotazioni,id_utente=id)
 
@@ -336,8 +354,9 @@ def corsi():
                 input_ora_fine = request.form['ora_finale_ricerca']
 
                 if ruolo == "iscritto" or ruolo == "istruttore": #ricerca corsi disponibili
-                    q_lista_tipologie = text("SELECT id_tipologia, nome_tipologia FROM tipologie_corsi ")
+                    
                     with engine.connect() as conn:
+                        q_lista_tipologie = text("SELECT id_tipologia, nome_tipologia FROM tipologie_corsi ")
                         lista_tipologie_tab = conn.execute(q_lista_tipologie)
                         
                         s = text("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
@@ -352,11 +371,35 @@ def corsi():
                             
                             "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data) "
                             )
+
+
+                        q_sale_pesi_libere = text(
+                            "SELECT s1.id_sala, f1.id_fascia , f1.inizio, f1.fine "
+                            "FROM sale s1  JOIN fascia_oraria f1 ON (f1.giorno = :intGiorno AND f1.inizio >= :oraInizio AND f1.fine <= :oraFine) "
+                            "WHERE s1.solo_attrezzi IS TRUE " 
+		                            "AND s1.id_sala NOT IN (SELECT s.id_sala "
+                                                            "FROM prenotazioni p JOIN sale s ON p.id_sala = s1.id_sala " 
+                                                            "WHERE p.data= :input_data AND s.solo_attrezzi IS TRUE ) "
+                                                            
+		                            "AND s1.posti_totali > (SELECT count(*) " 
+							                                "FROM prenotazioni p JOIN sale s ON p.id_sala = s1.id_sala "
+							                                "WHERE p.data= :input_data AND s.solo_attrezzi IS TRUE )"
+                                    "AND f1.id_fascia NOT IN (SELECT p.id_fascia "
+                                                            "FROM prenotazioni p  " 
+                                                            "WHERE p.data= :input_data AND p.codice_fiscale = :cf) "
+                                    "AND f1.id_fascia NOT IN (SELECT id_fascia "
+                                                            "FROM sale_corsi sc JOIN corsi c ON  (sc.id_corso= c.id_corso  ) "
+                                                            "WHERE  c.codice_fiscale_istruttore = :cf AND sc.data = :input_data ) "
+							)
+
                     try:
                         with engine.connect() as conn:
                             corsi_liberi = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB, cf= id_utente )
+                            sale_pesi_libere = conn.execute(q_sale_pesi_libere, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB,cf= id_utente )
                     except:
                         raise
+
+
                 if ruolo == "istruttore": 
                
                     q_sale_libere = text(
@@ -370,7 +413,7 @@ def corsi():
                     with engine.connect() as conn:
                         sale_disp_con_fasce = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
                 
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo, sale_disp_con_fasce =sale_disp_con_fasce , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente )
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo, sale_disp_con_fasce =sale_disp_con_fasce , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente, sale_pesi_libere = sale_pesi_libere )
         else:
            return  render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         

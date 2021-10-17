@@ -41,16 +41,43 @@
             {% for row in info_corsi %}
                 <tr>
                     <td>Sala{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td> <td>{{row['nome_tipologia']}}</td> <td>{{row['nome_istruttore']}} {{row['cognome_istruttore']}}</td>
-                    <td> <form action="profilo" method="post"> 
+                    <td> 
+                        <form action="profilo" method="post"> 
+                            <input type="hidden" name="dataPrenotata" value="{{data}}"  >
+                            <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
+                            <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
+                            <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
+                            <input type="submit" name="prenotaCorso" value="Prenotati">
+                        </form>
+                    </td>    
+                </tr>    
+            {% endfor %}
+        </table>
+        <table class="table">
+            <caption>SALE PESI DISPONIBILI</caption>
+            <tr>
+                <th>Sala</th><th>Dalle</th><th>Alle</th>
+            </tr>
+            {% for row in sale_pesi_libere %}
+            <tr>
+                <td>Sala{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td>
+                <td> 
+                    <form action="profilo" method="post"> 
                         <input type="hidden" name="dataPrenotata" value="{{data}}"  >
                         <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
                         <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
                         <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
-                        <input type="submit" name="prenotaCorso" value="Prenotati">
-                    </form></td>    
-                </tr>    
-            {% endfor %}
+                        <input type="submit" name="prenotaSalaPesi" value="Prenotati">
+                    </form>
+                </td>
+            </tr>
+            {% endfor  %}
         </table>
+
+
+
+
+
     {% endif %}
     
     {% if ruolo == 'istruttore' %}
