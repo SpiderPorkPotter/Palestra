@@ -2,24 +2,29 @@
 
 {% block content %}
 
-
+<br />
 <form action="/policy_occupazione" method="post">
-    
-    <label for="dpcm-start">Inserisci la data di inizio </label>
-    <input type="date" id="data_inizio" name="dpcm-start" value="">
-    
-    <label for="dpcm-end">Inserisci la data di fine </label>
-    <input type="date" id="data_fine" name="dpcm-end" value="">
-
-    <label for="perc">Percentuale :</label>
-    <input type="number" id="id_perc" name="perc" value="" min="0"  max="100" step="5">
-
-    <input type="submit"  name="confermaPolicy" value="Conferma le nuove policy">
+    <div class="form-group">
+        <label for="dpcm-start">Inserisci la data di inizio </label>
+        <input type="date" id="data_inizio" name="dpcm-start" value="" class="form-control">
+        <br />
+        <label for="dpcm-end">Inserisci la data di fine </label>
+        <input type="date" id="data_fine" name="dpcm-end" value="" class="form-control">
+        <br />
+        <label for="perc">Percentuale :</label>
+        <input type="number" id="id_perc" name="perc" value="" min="0" max="100" step="5" class="form-control">
+        <br />
+        <input type="submit" name="confermaPolicy" value="Conferma le nuove policy" class=" btn btn-primary">
+    </div>
 </form>
-
-<table>
-    Policies gia inserite:
-    <th> Percentuale </th><th> Data inizio</th> <th> Data fine</th>
+<br />
+<h3>Policies gia inserite:</h3>
+<table class="table">
+    <tr>
+        <th scope="col"> Percentuale </th>
+        <th scope="col"> Data inizio</th>
+        <th scope="col"> Data fine</th>
+    </tr>
     {% for row in policies %}
     <tr>
         <td>{{row['percentuale_occupabilità'] }} </td>
@@ -32,23 +37,23 @@
 
 
 <script>
-   function check_dates(){
+    function check_dates() {
         var vd1 = document.getElementById('data_inizio').value
         var vd2 = document.getElementById('data_fine').value
         var d_inizio = new Date(vd1 + 'T00:00')
         var d_fine = new Date(vd2 + 'T00:00')
         var d_oggi = new Date();
-        
-        return d_oggi < d_inizio && d_inizio  < d_fine 
+
+        return d_oggi < d_inizio && d_inizio < d_fine
     }
 
-    var callback =  function(){
-        if( check_dates() == true){
+    var callback = function () {
+        if (check_dates() == true) {
             document.querySelector('#id_btn_conferma').removeAttribute('disabled')
-            return 
-        }else{
+            return
+        } else {
             alert(" Controlla meglio le date! ")
-            document.querySelector('#id_btn_conferma').setAttribute('disabled','disabled')
+            document.querySelector('#id_btn_conferma').setAttribute('disabled', 'disabled')
             return
         }
     }
@@ -57,10 +62,10 @@
     di.addEventListener('change', callback)
 
     var df = document.getElementById('data_fine')
-    df.addEventListener('change', callback )
-    
+    df.addEventListener('change', callback)
 
-    
+
+
 </script>
 
 {% endblock %}

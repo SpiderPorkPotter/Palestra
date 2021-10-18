@@ -3,12 +3,14 @@
 {% block content %}
 
 <h2>{{ title }}</h2>
-<table>
-    <tr><th>Nome</th><th>Cognome</th><th>Cellulare</th></tr>
+<table class="table">
+    <tr>
+        <th scope="col">Nome</th><th scope="col">Cognome</th><th scope="col">Cellulare</th>
+    </tr>
     
     {% for row in lista_istruttori %}
         <tr>
-        <td>{{ row['nome'] }}</td><td>{{ row['cognome'] }}</td><td>{{ row['cellulare'] }}</td>
+            <td>{{ row['nome'] }}</td><td>{{ row['cognome'] }}</td><td>{{ row['telefono'] }}</td>
         <tr>
     {% endfor %}
 </table>

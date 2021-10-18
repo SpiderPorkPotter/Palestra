@@ -2,21 +2,23 @@
 
 {% block content %}
 
-<h3>{{ title }}</h3>
+<h2>{{ title }}</h2>
 {% if data %}
-    <h2>Ricerca corsi in data: {{data}}</h2>
+    <h3>Ricerca corsi in data: {{data}}</h3>
     <form id="settaggio_date_form" action="/corsi" method="POST">
-        
-        Ora iniziale :
-        <input type="time" name="ora_iniziale_ricerca">
-        <br>
-        Ora finale :
-        <input type="time" name="ora_finale_ricerca">
-        <br>
-        <input type="button" id="id_btn_giornoIntero" name="giornoIntero" value="Tutto Il Giorno">
-        <input type="hidden" name="dataSelezionata" value="{{data}}">
-        <br>
-        <input type="submit" name="ricerca" value="Cerca">
+        <div class="form-group">
+            <h4>Ora iniziale :</h4>
+            <input type="time" name="ora_iniziale_ricerca" class="form-control">
+            <br />
+            <h4>Ora finale :</h4>
+            <input type="time" name="ora_finale_ricerca" class="form-control">
+            <br />
+            <input type="button" id="id_btn_giornoIntero" name="giornoIntero" value="Tutto Il Giorno" class="btn btn-secondary">
+            <br />
+            <input type="hidden" name="dataSelezionata" value="{{data}}">
+            <br />
+            <input type="submit" name="ricerca" value="Cerca" class="btn btn-primary">
+        </div>
     </form>
 
     <script>

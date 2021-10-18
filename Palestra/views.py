@@ -22,6 +22,8 @@ import numpy
 #costanti utili
 nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
 RUOLI = ["adminDB", "capo", "istruttore", "iscritto" ]
+mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
+
 
 #psycopg2 è il driver che si usa per comunicare col database
 
@@ -84,16 +86,15 @@ def login():
     form = LoginForm()
 
     #se tutti i campi sono validati
-    em = form.email.data
+    ema = form.email.data
     pwd = form.password.data
     #controlla che ci sia una sola email corrispondente
     if request.method == 'POST':
-        utente = Persone.query.filter_by(email = em).first()
+        utente = Persone.query.filter_by(email = ema).first()
         #se c'è, allora controlla anche la password (salvata criptata)
         if utente is not None and utente.check_password(pwd):
             #se tutto va bene, effettua il login, aggiungendo l'utente
             #alla sessione e riportandolo alla schermata profilo
-          #  if check_password_hash(Persone.password, form.password.data):
             login_user(utente)
             return redirect(url_for('profilo'))
         #else
@@ -491,8 +492,6 @@ def calendario():
     if current_user != None:
         ruolo = Persone.get_role(current_user)
         
-    
-    mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
     nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
     data_corrente = datetime.today()
    

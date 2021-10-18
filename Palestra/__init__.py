@@ -13,6 +13,7 @@ app = Flask(__name__)
 
 #psycopg2 è il driver che si usa per comunicare col database
 DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:a@localhost/Palestra"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI

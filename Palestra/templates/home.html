@@ -63,5 +63,22 @@
     </div>
 </div>
 
+<table class="table">
+    <tr><th>Mese</th><th>Numero Corsi</th></tr>
+    {% for row in lezioni_al_mese %}
+    <tr>
+        <td>{{ nome_mesi[row['meseint']|int -1] }}</td>
+        <td>{{row['numcorsi']}}</td>
+    </tr>
+    {% endfor  %}
+    <tr><td> MESI CON PIU CORSI </td></tr>
 
-    {% endblock %}
+    {% for m in mesi_con_piu_corsi %}
+    <tr>
+        <td>{{ nome_mesi[m|int -1] }}</td>
+        <td> {{ num_corsi }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

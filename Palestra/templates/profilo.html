@@ -31,9 +31,10 @@
         <div>
             <h3>Poteri Del Capo (link provvisori)</h3> 
             <ul>
-                <li><a href="{{ url_for('corsi') }}">corsi</a></li>
+                <li><a href="{{ url_for('crea_sala') }}">Crea una nuova sala</a></li>
                 <li><a href="{{ url_for('policy_occupazione') }}">Policy occupazione</a></li>
                 <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
+                <li><a href="{{ url_for('istruttori') }}">Chi sono gli istruttori?</a></li>
             </ul>
         </div>
         
@@ -66,8 +67,8 @@
                                     {% if row['ruolo'] == 3 %} checked {% endif %} value="iscritto"> iscritto
                                 
                                 <input type="hidden" name="id_passato" value="{{ row['codice_fiscale'] }}" >
-                                <input type="submit" name="modificavalori" class="btn btn-primary"  value="ModificaPermessi">
-                        </form>
+                                <input type="submit" name="modificavalori" class="btn btn-primary"  value="ModificaPermessi" >
+                            </form>
                     </td>
                         
                     </tr>
@@ -80,7 +81,9 @@
     {% if ruolo == 'istruttore' or ruolo == 'iscritto' %}
     <h5>Prenotazioni effettuate : </h5>
     <table class="table">
-        <th>Data</th> <th>Sala</th> <th>Dalle</th><th>Alle</th> <th>Codice Prenotazione</th><th>Tipo</th>
+        <tr>
+            <th>Data</th> <th>Sala</th> <th>Dalle</th><th>Alle</th> <th>Codice Prenotazione</th><th>Tipo</th>
+        </tr> 
             {% for row in prenotazioni_effettuate %}
                 <tr>
                     <td>{{row['data']}}</td><td>{{row['id_sala']}}</td><td>{{row['inizio']}}</td><td>{{row['fine']}}</td> <td> {{row['codice_prenotazione']}} </td> <td> {{row['tipo_sala']}}</td>
