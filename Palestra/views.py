@@ -74,9 +74,33 @@ class RegistrazioneForm(FlaskForm):
 @app.route('/home')
 def home():
     #TODO:DA FAREEEEEEEEEEEEEEEEEEEEE
+    with engine.connect() as conn:
+        #numPrenotazioni è una visata
+        q_media_prenotazioni_al_giorno = text("SELECT  AVG(numPrenotazioni) AS num_prenotazioni FROM num_prenotazioni_per_giorno")
+        totale_lezioni_svolte_al_mese = text("SELECT COUNT(*) AS numcorsi, CAST(date_part('month',data)as int) AS meseint  FROM sale_corsi  GROUP BY date_part('month',data) ")
+        
+        tab_media_prenotazioni = conn.execute(q_media_prenotazioni_al_giorno)
+        tab_totale_lezioni_svolte_al_mese = conn.execute(totale_lezioni_svolte_al_mese)
+        tab_totale_lezioni_svolte_al_mese_copia = conn.execute(totale_lezioni_svolte_al_mese)
+        tab_totale_lezioni_svolte_al_mese_copia2 = conn.execute(totale_lezioni_svolte_al_mese)
+
+        #prendo i mesi con piu corsi
+        lista_num_corsi = []
+        #creo delle copie ed agisco su di esse xk il cursore scarica la tabella
+        
+        for row in tab_totale_lezioni_svolte_al_mese_copia:
+            lista_num_corsi.append(row['numcorsi'])
+        max_corsi =  max(lista_num_corsi)
+        mesi_con_max_corsi = []
+        for row in  tab_totale_lezioni_svolte_al_mese_copia2:
+            if row['numcorsi'] == max_corsi:
+                mesi_con_max_corsi.append(row['meseint'])
+        
+
+
     return render_template(
         'home.html',
-        title='Home Page'
+        title='Home Page', nome_mesi = mesi, lezioni_al_mese = tab_totale_lezioni_svolte_al_mese, mesi_con_piu_corsi = mesi_con_max_corsi ,num_corsi =  max_corsi  
     )
 
 
