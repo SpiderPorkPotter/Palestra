@@ -79,7 +79,7 @@ def home():
         q_media_prenotazioni_al_giorno = text("SELECT  AVG(numPrenotazioni) AS num_prenotazioni FROM num_prenotazioni_per_giorno")
         totale_lezioni_svolte_al_mese = text("SELECT COUNT(*) AS numcorsi, CAST(date_part('month',data)as int) AS meseint  FROM sale_corsi  GROUP BY date_part('month',data) ")
         
-        tab_media_prenotazioni = conn.execute(q_media_prenotazioni_al_giorno)
+        #tab_media_prenotazioni = conn.execute(q_media_prenotazioni_al_giorno)
         tab_totale_lezioni_svolte_al_mese = conn.execute(totale_lezioni_svolte_al_mese)
         tab_totale_lezioni_svolte_al_mese_copia = conn.execute(totale_lezioni_svolte_al_mese)
         tab_totale_lezioni_svolte_al_mese_copia2 = conn.execute(totale_lezioni_svolte_al_mese)
@@ -95,7 +95,22 @@ def home():
         for row in  tab_totale_lezioni_svolte_al_mese_copia2:
             if row['numcorsi'] == max_corsi:
                 mesi_con_max_corsi.append(row['meseint'])
-        
+        if almeno_una_settimana_nelle_policy():
+            cont_giorno_settimana  = contaGiorni()
+            s = text("SELECT * FROM vista_prenotazioni_settimana")
+            num_prenotazioni_per_giorno_settimana = conn.execute(s)
+            arr_medie = [0,0,0,0,0,0,0]
+            #calcolo le medie
+            for row in num_prenotazioni_per_giorno_settimana:
+                for i in range(0,len(arr_medie)):
+                    if row[nome_giorni_della_settimana[i].lower()] != 0 :
+                        arr_medie[i] = row[nome_giorni_della_settimana[i].lower()] / cont_giorno_settimana[i]
+                    else:
+                        arr_medie[i] = 0
+                print(arr_medie)
+
+
+
 
 
     return render_template(
@@ -727,4 +742,36 @@ def creaIDprenotazione():
         return next_id
 
 
+def contaGiorni():
+    num_gs = [0,0,0,0,0,0,0]
+
+    with engine.connect() as conn:
+        s = text("SELECT data_inizio,data_fine FROM policy_occupazione WHERE percentuale_occupabilità <> 0 ")    
+        lista_range_date = conn.execute(s)
+
+    for row in lista_range_date:
+        #data_inizio = datetime.strptime(row['data_inizio'], '%Y-%m-d%')
+        #data_fine = datetime.strptime(row['data_fine'], '%Y-%m-d%')
+        data_inizio = row['data_inizio']
+        data_fine = row['data_fine']
+        data_corrente = datetime.now()
+
+        while data_inizio != data_fine and data_inizio != data_corrente:
+            gs = data_inizio.weekday()
+            num_gs[gs] = num_gs[gs] + 1 
+            data_inizio = data_inizio + timedelta(days=1)
+
+    return num_gs
+
+
+def almeno_una_settimana_nelle_policy():
+    with engine.connect() as conn:
+        s = text("SELECT * FROM policy_occupazione")
+        tab = conn.execute(s)
+        n = 0
+    for row in tab:
+        delta = row['data_fine'] - row['data_inizio']
+        n = n + delta.days
+
+    return n >= 7
 
