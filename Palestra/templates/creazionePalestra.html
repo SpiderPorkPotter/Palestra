@@ -4,172 +4,230 @@
 
 <h1>Crea la tua palestra</h1>
 <form action="/creazionePalestra"  method="POST">
-    <h3>Informazioni della palestra :</h3>
-    <label for="nomePalestra">Nome</label>
-    <input type="text" id="nomePalestra"  name="nomePalestra" placeholder="Nome Palestra" required>
+    <div class="form-group">
+        <h3>Informazioni della palestra :</h3>
+        <label for="nomePalestra">Nome</label>
+        <input type="text" id="nomePalestra" name="nomePalestra" placeholder="Nome Palestra" required class="form-control">
 
-    <label for="indirizzoPalestra">Indirizzo</label>
-    <input type="text" id="indirizzoPalestra"  name="indirizzoPalestra" placeholder="Indirizzo" required>
-
-
-
-
-<h3>Inserire le fascie orarie dei relativi giorni della settimana:</h3>
-<script>
-
-function check_all_ok(){   
-   
-    var  inputs =  document.querySelectorAll("input[type='time']")
-    var is_not_ok = false
-    console.log(inputs)
-    id_submit = document.getElementById('inviaFascie')
-    
-    for(var i = 0; i < inputs.length; i++  ){
-        if( inputs[i].getAttribute('title') == "" ){
-            $( inputs[i]).removeAttr('title')
-            $(inputs[i]).tooltip('disable')
-            is_not_ok = true
-            break
-        }
-    }
-    document.getElementById("inviaFasce").disabled = is_not_ok
-    return
-}
+        <label for="indirizzoPalestra">Indirizzo</label>
+        <input type="text" id="indirizzoPalestra" name="indirizzoPalestra" placeholder="Indirizzo" required class="form-control">
 
 
-    function crea(intGiorno){
-        var b = document.getElementById("btn_aggiungi_"+ intGiorno)
-        var i=0
-        b.addEventListener("click", function(){
-            i++;
+        <h3>Inserire le fascie orarie dei relativi giorni della settimana:</h3>
+        <script>
 
-            var inp_ora_inizio = document.createElement("input")
-            inp_ora_inizio.setAttribute("type","time")
-            var nome_input_ora_inizio =  intGiorno + "_inizioFascia_"+ i  
-            inp_ora_inizio.setAttribute("name",nome_input_ora_inizio)
+            function check_all_ok() {
 
-            var inp_ora_fine = document.createElement("input")
-            inp_ora_fine.setAttribute("type","time")
-            var nome_input_ora_fine =  intGiorno + "_fineFascia_"+ i 
-            inp_ora_fine.setAttribute("name",nome_input_ora_fine)
-           
-            inp_ora_fine.addEventListener("change",function(){
-                if (this.value != undefined && inp_ora_inizio.value > this.value){
-                    $(inp_ora_fine).tooltip({title:"ora finale non valida"})
-                    $(inp_ora_fine).tooltip('show')
-                    
+                var inputs = document.querySelectorAll("input[type='time']")
+                var is_not_ok = false
+                console.log(inputs)
+                id_submit = document.getElementById('inviaFascie')
+
+                for (var i = 0; i < inputs.length; i++) {
+                    if (inputs[i].getAttribute('title') == "") {
+                        $(inputs[i]).removeAttr('title')
+                        $(inputs[i]).tooltip('disable')
+                        is_not_ok = true
+                        break
+                    }
                 }
-                check_all_ok()
+                document.getElementById("inviaFasce").disabled = is_not_ok
                 return
-            })
-            inp_ora_inizio.addEventListener("change",function(){
-                if (this.value != undefined && inp_ora_fine.value < this.value){
-                    $(inp_ora_inizio).tooltip({title:"ora iniziale non valida"})
-                    $(inp_ora_inizio).tooltip('show')
+            }
+
+
+            function crea(intGiorno) {
+                var b = document.getElementById("btn_aggiungi_" + intGiorno)
+                var i = 0
+                b.addEventListener("click", function () {
+                    i++;
+
+                    var inp_ora_inizio = document.createElement("input")
+                    inp_ora_inizio.setAttribute("type", "time")
+                    inp_ora_inizio.setAttribute("class", "form-control")
                     
-                }
-                check_all_ok()
-                return
-            })
-            var table = document.getElementById('table_'+intGiorno)
-            var tr = document.createElement('tr');
+                    var nome_input_ora_inizio = intGiorno + "_inizioFascia_" + i
+                    inp_ora_inizio.setAttribute("name", nome_input_ora_inizio)
 
-            var td_label = document.createElement('td')
-                td_label.innerHTML = "Fascia" + i;
-            table.appendChild(tr.appendChild(td_label))
+                    var inp_ora_fine = document.createElement("input")
+                    inp_ora_fine.setAttribute("type", "time")
+                    inp_ora_fine.setAttribute("class", "form-control")
 
-            var td_ora_inizio = document.createElement('td')
-            var td_ora_fine = document.createElement('td')
-            
-            table.appendChild(tr.appendChild(td_ora_inizio.appendChild(inp_ora_inizio)))
-            table.appendChild(tr.appendChild(td_ora_fine.appendChild(inp_ora_fine)))
-            console.log(inp_ora_inizio.getAttribute("name"))
-            console.log(inp_ora_fine.getAttribute("name"))
-        })
-    }
+                    var nome_input_ora_fine = intGiorno + "_fineFascia_" + i
+                    inp_ora_fine.setAttribute("name", nome_input_ora_fine)
 
+                    inp_ora_fine.addEventListener("change", function () {
+                        if (this.value != undefined && inp_ora_inizio.value > this.value) {
+                            $(inp_ora_fine).tooltip({ title: "ora finale non valida" })
+                            $(inp_ora_fine).tooltip('show')
 
+                        }
+                        check_all_ok()
+                        return
+                    })
+                    inp_ora_inizio.addEventListener("change", function () {
+                        if (this.value != undefined && inp_ora_fine.value < this.value) {
+                            $(inp_ora_inizio).tooltip({ title: "ora iniziale non valida" })
+                            $(inp_ora_inizio).tooltip('show')
 
-</script>
+                        }
+                        check_all_ok()
+                        return
+                    })
+                    var table = document.getElementById('table_' + intGiorno)
+                    var tr = document.createElement('tr');
 
-<h4>Lunedì</h4>
-<table id="table_1">
-    <tr><td>    <input type="button" id="btn_aggiungi_1" value="Aggiungi Fascia"></input> </td></tr>
-</table>
-<script > crea("1") </script>
+                    var td_label = document.createElement('td')
+                    td_label.innerHTML = "Fascia:" + i;
+                    table.appendChild(tr.appendChild(td_label))
 
-<h4>Martedì</h4>
-<table id="table_2">
-    <tr><td>    <input type="button" id="btn_aggiungi_2" value="Aggiungi Fascia"></input> </td></tr>
-</table>
-<script > crea("2") </script>
+                    var td_ora_inizio = document.createElement('td')
+                    var td_ora_fine = document.createElement('td')
 
-<h4>Mercoledì</h4>
-<table id="table_3">
-    <tr><td>    <input type="button" id="btn_aggiungi_3" value="Aggiungi Fascia"></input> </td></tr>
-</table>
-<script > crea("3") </script>
+                    table.appendChild(tr.appendChild(td_ora_inizio.appendChild(inp_ora_inizio)))
+                    table.appendChild(tr.appendChild(td_ora_fine.appendChild(inp_ora_fine)))
+                    console.log(inp_ora_inizio.getAttribute("name"))
+                    console.log(inp_ora_fine.getAttribute("name"))
+                })
+            }
 
-<h4>Giovedì</h4>
-<table id="table_4">
-    <tr><td>    <input type="button" id="btn_aggiungi_4" value="Aggiungi Fascia"></input> </td></tr>
-</table>
-<script > crea("4") </script>
+        </script>
 
-<h4>Venerdì</h4>
-<table id="table_5">
-    <tr><td>    <input type="button" id="btn_aggiungi_5" value="Aggiungi Fascia"></input> </td></tr>
-</table>
-<script > crea("5") </script>
-<h4>Sabato</h4>
-<table id="table_6">
-    <tr><td>    <input type="button" id="btn_aggiungi_6" value="Aggiungi Fascia"></input> </td></tr>
-</table>
-<script > crea("6") </script>
+        <h4>Lunedì</h4>
+        <table id="table_1" class="table">
+            <tr>
+                <td>
+                    <input type="button" id="btn_aggiungi_1" value="Aggiungi Fascia" class="btn btn-secondary">
+                </td>
+            </tr>
+        </table>
+        <script>crea("1")</script>
 
-<h4>Domenica</h4>
-<table id="table_7">
-    <tr><td>    <input type="button" id="btn_aggiungi_7" value="Aggiungi Fascia"></input> </td></tr>
-</table>
-<script > crea("7") </script>
+     
+        <h4>Martedì</h4>
+        <table id="table_2" class="table">
+            <tr>
+                <td>
+                    <input type="button" id="btn_aggiungi_2" value="Aggiungi Fascia" class="btn btn-secondary">
+                </td>
+            </tr>
+        </table>
+        <script>crea("2")</script>
 
-<input id="inviaFasce" type="submit" name="inviaFasce" value="Salva">
+        
+        <h4>Mercoledì</h4>
+        <table id="table_3" class="table">
+            <tr>
+                <td>
+                    <input type="button" id="btn_aggiungi_3" value="Aggiungi Fascia" class="btn btn-secondary">
+                </td>
+            </tr>
+        </table>
+        <script>crea("3")</script>
+
+        <h4>Giovedì</h4>
+        <table id="table_4" class="table">
+            <tr>
+                <td>
+                    <input type="button" id="btn_aggiungi_4" value="Aggiungi Fascia" class="btn btn-secondary">
+                </td>
+            </tr>
+        </table>
+        <script>crea("4")</script>
+
+        <h4>Venerdì</h4>
+        <table id="table_5" class="table">
+            <tr>
+                <td>
+                    <input type="button" id="btn_aggiungi_5" value="Aggiungi Fascia" class="btn btn-secondary">
+                </td>
+            </tr>
+        </table>
+        <script>crea("5")</script>
+        <h4>Sabato</h4>
+        <table id="table_6" class="table">
+            <tr>
+                <td>
+                    <input type="button" id="btn_aggiungi_6" value="Aggiungi Fascia" class="btn btn-secondary">
+                </td>
+            </tr>
+        </table>
+        <script>crea("6")</script>
+
+        <h4>Domenica</h4>
+        <table id="table_7" class="table">
+            <tr>
+                <td>
+                    <input type="button" id="btn_aggiungi_7" value="Aggiungi Fascia" class="btn btn-secondary">
+                </td>
+            </tr>
+        </table>
+        <script>crea("7")</script>
+
+        <input id="inviaFasce" type="submit" name="inviaFasce" value="Salva" class="btn btn-primary">
+    </div>
 </form>
 
 {% if tab_fasce != Null %}
-<br>
-<br>
-    Fasce gia inserite : 
+<br />
+<br />
+    <h3>Fasce gia inserite :</h3> 
     <br>
     <table class="table"> 
-        <th>Giorno</th><th>Fascia</th><th>Dalle</th><th>Alle</th>
+        <tr>
+            <th scope="col">Giorno</th>
+            <th scope="col">Fascia</th>
+            <th scope="col">Dalle</th>
+            <th scope="col">Alle</th>
+        </tr>
+  
     {% for row in tab_fasce %}
-    <tr>
-        <td> {{ nome_giorni_della_settimana[row['giorno']-1] }} </td> 
-        <td> {{ row['id_fascia']  }} </td>
-        <td> {{ row['inizio'] }}  </td> 
-        <td> {{ row['fine'] }}  </td>
-    </tr>
+        <tr>
+            <td> {{ nome_giorni_della_settimana[row['giorno']-1] }} </td> 
+            <td> {{ row['id_fascia']  }} </td>
+            <td> {{ row['inizio'] }}  </td> 
+            <td> {{ row['fine'] }}  </td>
+        </tr>
     {% endfor  %}
     </table>
 {% endif %}
+    <hr />
+    <div class="list-group">
+        <h4> Elenco tipologie di corsi gi&aacute; inserite :</h4>
 
-<div class="form-group>" >
-    <h4> Tipologie dei corsi gia inserite :</h4>
-    {% if tipologie_corsi %}
-        <p>Tipologie gia inserite: </p>
-        <ul>
-            {% for row in tipologie_corsi %}
-                {{row['nome_tipologia_corsi']}}    
+        <!--elenco puntato con le tipologie-->
+        {% if el_tipologie %}
+            {% for row in el_tipologie %}
+                <ul class="list-group">
+                    <li>{{ row['nome_tipologia'] }}</li>
+                </ul>
             {% endfor %}
-        </ul>
-    {% endif %}
-    <form action="/creazionePalestra" method="POST" id="tipologiaCorsoForm">
-        <input type="text" maxlength="50" name="nomeTipologiaCorso">
-        <input type="submit" name="AggiungiTipoCorso" value="Aggiungi Tipologia">
-    </form>
-    <textarea name="descrizioneTipologiaCorso" form="tipologiaCorsoForm">Inserire la descrizione della tipologia qui. </textarea>
-</div>
+        {% endif %}
+        <!--fine elenco tipologie-->
+
+        <!-- il contenuto di questo primo if qui sotto non viene visualizzato-->
+        {% if tipologie_corsi %}
+        <p>Tipologie gia inserite: </p>
+        
+            {% for row in tipologie_corsi %}
+                <ul>
+                    <li>{{row['nome_tipologia']}}</li>
+                </ul>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div class="form-group>">
+        <form action="/creazionePalestra" method="POST" id="tipologiaCorsoForm">
+            <label>Inserisci il nome di una nuova tipologia:</label>
+            <input type="text" maxlength="50" name="nomeTipologiaCorso" class="form-control">
+        <br />
+            <label>Descrizione della tipologia:</label>
+            <textarea name="descrizioneTipologiaCorso" form="tipologiaCorsoForm">Inserire la descrizione della tipologia qui. </textarea>
+        <br />
+        <br />
+            <input type="submit" name="AggiungiTipoCorso" value="Aggiungi Tipologia" class="btn btn-primary">
+        </form>
+    </div>
 
 
 

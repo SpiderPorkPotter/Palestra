@@ -27,8 +27,8 @@ mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto",
 
 #psycopg2 è il driver che si usa per comunicare col database
 
-DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-#DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
 engine = create_engine(DB_URI)
 
 #inizializza la libreria che gestisce i login
@@ -322,13 +322,16 @@ def logout():
 @app.route('/corsi', methods = ['POST', 'GET'])
 def corsi():
     
-    data = request.form['dataSelezionata']
-    tmp_data = data[2 : len(data) : ]
-    data_for_DB = str(datetime.strptime(tmp_data,"%y %m %d")).split(' ')
-    data_for_DB = data_for_DB[0]
-    id_utente = Persone.get_id(current_user)
-    ruolo = RUOLI[Persone.get_role(current_user)]
-    intGiorno_settimana = data_to_giorno_settimana(data_for_DB)
+
+    #controlla se va bene che sia messa solo sta parte dentro la richiesta post
+    if request.method == 'POST':
+        data = request.form['dataSelezionata']
+        tmp_data = data[2 : len(data) : ]
+        data_for_DB = str(datetime.strptime(tmp_data,"%y %m %d")).split(' ')
+        data_for_DB = data_for_DB[0]
+        id_utente = Persone.get_id(current_user)
+        ruolo = RUOLI[Persone.get_role(current_user)]
+        intGiorno_settimana = data_to_giorno_settimana(data_for_DB)
 
     is_ricerca_setted = request.method == 'POST' and "ricerca" in request.form and request.form['ricerca'] == "Cerca"
 
@@ -504,10 +507,17 @@ def creazionePalestra():
         
     #mostrare le fasce gia aggiunte:
     with engine.connect() as conn:    
-            s = text("SELECT * FROM Fascia_oraria  ORDER BY id_fascia, giorno " )
-            tab_fasce = conn.execute(s)        
+            s = text("SELECT * FROM Fascia_oraria ORDER BY id_fascia, giorno " )
+            tab_fasce = conn.execute(s)
+    
+    #mostrare le tipologie di corsi già aggiunte (per agevolare l'inserimento)
+    #in teoria ne hai una già fatta, ma non capivo dove mostrasse i dati, quindi l'ho aggiunta
+    #sull'html. In caso rimuoviamo la mia
+    with engine.connect() as conn:    
+            s = text("SELECT nome_tipologia FROM tipologie_corsi" )
+            el_tipologie = conn.execute(s)
             
-    return render_template('creazionePalestra.html',title='Crea La Palestra',tab_fasce = tab_fasce,nome_giorni_della_settimana = nome_giorni_della_settimana, tipologie_corsi =tipologie_presenti)
+    return render_template('creazionePalestra.html',title='Crea La Palestra',tab_fasce = tab_fasce,nome_giorni_della_settimana = nome_giorni_della_settimana, tipologie_corsi =tipologie_presenti, el_tipologie = el_tipologie)
 
 
 @app.route('/calendario', methods=['POST', 'GET'])

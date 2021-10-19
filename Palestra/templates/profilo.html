@@ -23,154 +23,176 @@
         </li>
         <li>
             <span class="field-name">Sei un </span>
-            <span class="field-value" style="color: darkorchid  ; font-weight: bold; " > {{ ruolo }}</span>
+            <span class="field-value" style="color: darkorchid  ; font-weight: bold; "> {{ ruolo }}</span>
         </li>
     </ul>
     <hr />
 </div>
-    <!-- poteri del boss
-        dropdown template preso da qui:http://localhost:56500/profilo#-->
-    {% if ruolo == 'capo' %}
 
-        <div>
-            <h3>Poteri Del Capo (link provvisori)</h3> 
-            <ul>
-                <li><a href="{{ url_for('crea_sala') }}">Crea una nuova sala</a></li>
-                <li><a href="{{ url_for('policy_occupazione') }}">Policy occupazione</a></li>
-                <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
-                <li><a href="{{ url_for('istruttori') }}">Chi sono gli istruttori?</a></li>
-            </ul>
-        </div>
-        
+{% if ruolo == 'istruttore' %}
+    <div>
+        <ul>
+            <li><a href="{{ url_for('corsi') }}">Vai ai corsi</a></li>
+        </ul>
+    </div>
+{% endif %}
 
-        <h2> lista iscritti</h2>
-             <table class="table">
-                
-                <tr>
-                    <th scope="col">Codice Fiscale</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Cognome</th>
-                    <th scope="col">Telefono</th>
-                    <th scope="col">Potere</th>
-                    
-                </tr>
-            
-            
-                {% for row in lista_persone %}
-                    <tr>
-                        <td>{{ row['codice_fiscale'] }}</td>
-                        <td>{{ row['nome'] }}</td>
-                        <td>{{ row['cognome'] }}</td>
-                        <td>{{ row['telefono'] }}</td>
-                        <td>
-                            <form action="/profilo" method="POST">
-                                <input type="radio" name="{{ row['codice_fiscale'] }}_radio"
-                                    {% if row['ruolo'] == 2 %} checked {% endif %} value="istruttore"> istruttore
-                                <br>
-                                <input type="radio" name="{{ row['codice_fiscale'] }}_radio"
-                                    {% if row['ruolo'] == 3 %} checked {% endif %} value="iscritto"> iscritto
-                                
-                                <input type="hidden" name="id_passato" value="{{ row['codice_fiscale'] }}" >
-                                <input type="submit" name="modificavalori" class="btn btn-primary"  value="ModificaPermessi" >
-                            </form>
-                    </td>
-                        
-                    </tr>
-                    {% endfor %}
-               
-            </table>
-        
+{% if ruolo == 'capo' %}
+<div>
+    <h3>Poteri Del Capo (link provvisori)</h3>
+    <ul>
+        <li><a href="{{ url_for('crea_sala') }}">Crea una nuova sala</a></li>
+        <li><a href="{{ url_for('policy_occupazione') }}">Policy occupazione</a></li>
+        <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
+        <li><a href="{{ url_for('istruttori') }}">Chi sono gli istruttori?</a></li>
+        <li><a href="{{ url_for('creazionePalestra') }}">Crea una palestra</a></li>
+    </ul>
+</div>
+
+
+<h2> lista iscritti</h2>
+<table class="table">
+
+    <tr>
+        <th scope="col">Codice Fiscale</th>
+        <th scope="col">Nome</th>
+        <th scope="col">Cognome</th>
+        <th scope="col">Telefono</th>
+        <th scope="col">Potere</th>
+
+    </tr>
+
+
+    {% for row in lista_persone %}
+    <tr>
+        <td>{{ row['codice_fiscale'] }}</td>
+        <td>{{ row['nome'] }}</td>
+        <td>{{ row['cognome'] }}</td>
+        <td>{{ row['telefono'] }}</td>
+        <td>
+            <form action="/profilo" method="POST">
+                <input type="radio" name="{{ row['codice_fiscale'] }}_radio"
+                       {% if row['ruolo']==2 %} checked {% endif %} value="istruttore"> istruttore
+                <br>
+                <input type="radio" name="{{ row['codice_fiscale'] }}_radio"
+                       {% if row['ruolo']==3 %} checked {% endif %} value="iscritto"> iscritto
+
+                <input type="hidden" name="id_passato" value="{{ row['codice_fiscale'] }}">
+                <input type="submit" name="modificavalori" class="btn btn-primary" value="ModificaPermessi">
+            </form>
+        </td>
+
+    </tr>
+    {% endfor %}
+
+</table>
+
     {% endif %}
 
     {% if ruolo == 'istruttore' or ruolo == 'iscritto' %}
-    <h5>Prenotazioni effettuate : </h5>
-    <table class="table">
-        <tr>
-            <th>Data</th> <th>Sala</th> <th>Dalle</th><th>Alle</th> <th>Codice Prenotazione</th><th>Tipo</th>
-        </tr> 
-            {% for row in prenotazioni_effettuate %}
-                <tr>
-                    <td>{{row['data']}}</td><td>{{row['id_sala']}}</td><td>{{row['inizio']}}</td><td>{{row['fine']}}</td> <td> {{row['codice_prenotazione']}} </td> <td> {{row['tipo_sala']}}</td>
-                    <td>
-                        <!-- L'ide lo segna in rosso ma non da problemi -->
-                       <input type="button" class="btn btn-primary" onClick="apriDialog( {{ row['codice_prenotazione'] }} )" value='Cancella' > 
-                        
-                        
-                    </td>
-                </tr>
-            {% endfor %}
-        
-    </table>
+<h5>Prenotazioni effettuate : </h5>
+<table class="table">
+    <tr>
+        <th>Data</th>
+        <th>Sala</th>
+        <th>Dalle</th>
+        <th>Alle</th>
+        <th>Codice Prenotazione</th>
+        <th>Tipo</th>
+    </tr>
+    {% for row in prenotazioni_effettuate %}
+    <tr>
+        <td>{{row['data']}}</td>
+        <td>{{row['id_sala']}}</td>
+        <td>{{row['inizio']}}</td>
+        <td>{{row['fine']}}</td>
+        <td> {{row['codice_prenotazione']}} </td>
+        <td> {{row['tipo_sala']}}</td>
+        <td>
+            <!-- L'ide lo segna in rosso ma non da problemi -->
+            <input type="button" class="btn btn-primary" onClick="apriDialog( {{ row['codice_prenotazione'] }} )" value='Cancella'>
 
-    <script>
-         function apriDialog(savedValue){
-             console.log(savedValue)
-            var dialog = document.createElement("dialog")
-            dialog.style.left ="50%"
-            dialog.style.top = "50%"
-           dialog.style.transform = "translate(-50%,-50%)"
-           dialog.style.borderRadius = "5%"
-           
-            var p = document.createElement('p')
-            p.innerHTML = "Sei sicuro di voler cancellare la prenotazione?"
-            dialog.appendChild(p)
-            var f = document.createElement("form")
-            f.setAttribute("action", "/profilo")
-            f.setAttribute("method", "post")
-            
-            var b_hidden = document.createElement('input')
-            b_hidden.setAttribute("type","hidden")
-            b_hidden.setAttribute("name","id_prenotazione_key")
-            b_hidden.setAttribute("value",savedValue)
 
-            var b_conferma = document.createElement('input')
-            b_conferma.setAttribute("type","submit")
-            b_conferma.setAttribute("name","Conferma")
-            b_conferma.setAttribute("value","Conferma Cancellazione")
-            b_conferma.setAttribute("class", "btn btn-primary")
-            var b_annulla = document.createElement('input')
-            b_annulla.setAttribute("type","button")
-            b_annulla.setAttribute("value", "Annulla" )
-            b_annulla.setAttribute("class", "btn btn-primary")
-            b_annulla.addEventListener("click" ,function(){
-                dialog.close()
-            })
-            
-            
-            f.appendChild(b_annulla)
-            f.appendChild(b_hidden)
-            f.appendChild(b_conferma)
-            dialog.appendChild(f)
-            var body = document.getElementsByTagName("body")
-            body[0].appendChild(dialog)
-            dialog.show()
-            
-            return
-        }
+        </td>
+    </tr>
+    {% endfor %}
 
-    </script>
+</table>
+
+<script>
+    function apriDialog(savedValue) {
+        console.log(savedValue)
+        var dialog = document.createElement("dialog")
+        dialog.style.left = "50%"
+        dialog.style.top = "50%"
+        dialog.style.transform = "translate(-50%,-50%)"
+        dialog.style.borderRadius = "5%"
+
+        var p = document.createElement('p')
+        p.innerHTML = "Sei sicuro di voler cancellare la prenotazione?"
+        dialog.appendChild(p)
+        var f = document.createElement("form")
+        f.setAttribute("action", "/profilo")
+        f.setAttribute("method", "post")
+
+        var b_hidden = document.createElement('input')
+        b_hidden.setAttribute("type", "hidden")
+        b_hidden.setAttribute("name", "id_prenotazione_key")
+        b_hidden.setAttribute("value", savedValue)
+
+        var b_conferma = document.createElement('input')
+        b_conferma.setAttribute("type", "submit")
+        b_conferma.setAttribute("name", "Conferma")
+        b_conferma.setAttribute("value", "Conferma Cancellazione")
+        b_conferma.setAttribute("class", "btn btn-primary")
+        var b_annulla = document.createElement('input')
+        b_annulla.setAttribute("type", "button")
+        b_annulla.setAttribute("value", "Annulla")
+        b_annulla.setAttribute("class", "btn btn-primary")
+        b_annulla.addEventListener("click", function () {
+            dialog.close()
+        })
+
+
+        f.appendChild(b_annulla)
+        f.appendChild(b_hidden)
+        f.appendChild(b_conferma)
+        dialog.appendChild(f)
+        var body = document.getElementsByTagName("body")
+        body[0].appendChild(dialog)
+        dialog.show()
+
+        return
+    }
+
+</script>
     {% endif %}
         {% if ruolo == 'istruttore' %}
             {% if tab_corsi_creati %}
-            <h5> Corsi creati :</h5>
-            <table class="table">
-                {% for row in tab_corsi_creati %}
-                    <tr> 
-                        <td>{{ row['data'] }}</td><td>{{ row['id_corso'] }}</td><td>{{ row['inizio'] }}</td><td>{{ row['fine'] }}</td><td>{{ row['nome_corso'] }}</td><td>{{ row['nome_tipologia'] }}</td>
-                        <td>
-                            <form action="/profilo" method="post">
-                                <input type="hidden" name="id_sala" value="{{row['id_sala']}}" >
-                                <input type="hidden" name="dataCorso" value="{{row['data']}}" >
-                                <input type="hidden" name="id_fascia" value="{{row['id_fascia']}}" >
-                                <input type="hidden" name="id_corso_da_cancellare" value="{{ row['id_corso'] }}" >
-                                <input type="submit" name="cancellaCorso" value="Cancella Questo Corso">
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
+<h5> Corsi creati :</h5>
+<table class="table">
+    {% for row in tab_corsi_creati %}
+    <tr>
+        <td>{{ row['data'] }}</td>
+        <td>{{ row['id_corso'] }}</td>
+        <td>{{ row['inizio'] }}</td>
+        <td>{{ row['fine'] }}</td>
+        <td>{{ row['nome_corso'] }}</td>
+        <td>{{ row['nome_tipologia'] }}</td>
+        <td>
+            <form action="/profilo" method="post">
+                <input type="hidden" name="id_sala" value="{{row['id_sala']}}">
+                <input type="hidden" name="dataCorso" value="{{row['data']}}">
+                <input type="hidden" name="id_fascia" value="{{row['id_fascia']}}">
+                <input type="hidden" name="id_corso_da_cancellare" value="{{ row['id_corso'] }}">
+                <input type="submit" name="cancellaCorso" value="Cancella Questo Corso">
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
             {% endif %}
     {% endif %}
-    
+
 
     {% endblock %}

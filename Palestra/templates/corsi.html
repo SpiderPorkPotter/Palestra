@@ -35,87 +35,111 @@
 
 
     {% if ruolo == 'iscritto' or ruolo == 'istruttore' %}
-        <table class="table">
-            <caption>CORSI DISPONIBILI </caption>
+    <table class="table">
+        <caption><strong>CORSI DISPONIBILI</strong></caption>
+        <tr>
+            <th scope="col">Sala</th>
+            <th scope="col">Dalle</th>
+            <th scope="col">Alle</th>
+            <th scope="col">Tipologia</th>
+            <th scope="col">Tenuto da</th>                
+        </tr>
+        {% for row in info_corsi %}
             <tr>
-                <th>Sala</th><th>Dalle</th><th>Alle</th><th>Tipologia</th><th>Tenuto da</th><th></th>
-            </tr>
-            {% for row in info_corsi %}
-                <tr>
-                    <td>Sala{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td> <td>{{row['nome_tipologia']}}</td> <td>{{row['nome_istruttore']}} {{row['cognome_istruttore']}}</td>
-                    <td> 
-                        <form action="profilo" method="post"> 
-                            <input type="hidden" name="dataPrenotata" value="{{data}}"  >
-                            <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
-                            <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
-                            <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
-                            <input type="submit" name="prenotaCorso" value="Prenotati">
-                        </form>
-                    </td>    
-                </tr>    
-            {% endfor %}
-        </table>
-        <table class="table">
-            <caption>SALE PESI DISPONIBILI</caption>
-            <tr>
-                <th>Sala</th><th>Dalle</th><th>Alle</th>
-            </tr>
-            {% for row in sale_pesi_libere %}
-            <tr>
-                <td>Sala{{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td>
+                <td>Sala {{row['id_sala']}}</td>
+                <td>{{row['inizio']}} </td> 
+                <td>{{row['fine']}} </td> 
+                <td>{{row['nome_tipologia']}}</td> 
+                <td>{{row['nome_istruttore']}} {{row['cognome_istruttore']}}</td>
                 <td> 
                     <form action="profilo" method="post"> 
                         <input type="hidden" name="dataPrenotata" value="{{data}}"  >
                         <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
                         <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
                         <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
-                        <input type="submit" name="prenotaSalaPesi" value="Prenotati">
+                        <input type="submit" name="prenotaCorso" value="Prenotati" class="btn btn-secondary">
                     </form>
-                </td>
-            </tr>
-            {% endfor  %}
-        </table>
-
-
-
-
-
+                </td>    
+            </tr>    
+        {% endfor %}
+    </table>
+    <table class="table">
+        <caption><strong>SALE PESI DISPONIBILI</strong></caption>
+        <tr>
+            <th scope="col">Sala</th>
+            <th scope="col">Dalle</th>
+            <th scope="col">Alle</th>
+            <th scope="col">Premi qui</th>
+        </tr>
+        {% for row in sale_pesi_libere %}
+        <tr>
+            <td>Sala {{row['id_sala']}} </td> <td>{{row['inizio']}} </td> <td>{{row['fine']}} </td>
+            <td> 
+                <form action="profilo" method="post"> 
+                    <input type="hidden" name="dataPrenotata" value="{{data}}"  >
+                    <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
+                    <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
+                    <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
+                    <input type="submit" name="prenotaSalaPesi" value="Prenotati" class="btn btn-primary">
+                </form>
+            </td>
+        </tr>
+        {% endfor  %}
+    </table>
     {% endif %}
+
     
     {% if ruolo == 'istruttore' %}
-        <caption> CREA UN CORSO </caption>
-        <form action="/corsi" method="POST">
+        
+    <form action="/corsi" method="POST">
+        <div class="form-group">
             <table class="table">
-                    <th>Dalle</th><th>Alle</th><th>Sala</th><th>Posti Totali</th>
-                    {% for row  in sale_disp_con_fasce %}
-                    <tr>
-                        <td>{{row['inizio']}}</td><td>{{row['fine']}}</td><td>Sala {{row['id_sala']}}</td><td>{{row['posti_totali']}}</td>
-                        <td> <input  type="radio"  name="nomeRadioIdFascia {{row['id_fascia']}}" value="idfascia_{{row['id_fascia']}} idsala_{{row['id_sala']}}"> </td>
-                    </tr>
-                        
-
-                    {% endfor %}
+                <caption><strong>CREA UN CORSO</strong></caption>
+                <tr>
+                    <th scope="col">Dalle</th>
+                    <th scope="col">Alle</th>
+                    <th scope="col">Sala</th>
+                    <th scope="col">Posti Totali</th>
+                    <th scope="col">Seleziona</th>
+                </tr>
+                {% for row  in sale_disp_con_fasce %}
+                <tr>
+                    <td>{{row['inizio']}}</td>
+                    <td>{{row['fine']}}</td>
+                    <td>Sala {{row['id_sala']}}</td>
+                    <td>{{row['posti_totali']}}</td>
+                    <td> <input type="radio" name="nomeRadioIdFascia {{row['id_fascia']}}" value="idfascia_{{row['id_fascia']}} idsala_{{row['id_sala']}}"> </td>
+                </tr>
+                {% endfor %}
             </table>
 
-            <h5>Inserisci le informazioni relative al corso</h5>
+            <br />
+            <h4>Inserisci le informazioni relative al corso che vuoi inserire</h4>
             <table class="table">
+                <tr>
+                    <th scope="col"> Tipologia generale corso</th>
+                    <th scope="col"> Nome del tuo corso</th>
+                </tr>
                 <tr>
                     <td>Tipo del corso : 
-                    <select name="tipologie">
-                        {% for row in lista_tipologie_tab %}
-                        <option value="{{row['id_tipologia']}}"> {{ row['nome_tipologia'] }}</option>
-                        {% endfor %}
-                    </select>
+                        <select name="tipologie" class="form-select" aria-label="Default select example">
+                            {% for row in lista_tipologie_tab %}
+                                <option class="form-select" value="{{row['id_tipologia']}}"> {{ row['nome_tipologia'] }}</option>
+                            {% endfor %}
+                        </select>
                     </td> 
-                    <td> <input type="text" name ="nomeCorso" placeholder="nome del corso"> </td>
+                    <td> <input type="text" name ="nomeCorso" placeholder="nome del corso" class="form-control"> </td>
                 </tr>
                 <tr>
-                <td> <input type="submit" name ="inserimentoCorso" value="Inserisci il corso"> </td>
+                    <td> <input type="submit" name ="inserimentoCorso" value="Scrivi il nome del tuo corso" class="btn btn-primary"> </td>
                 </tr>
-                <input type="hidden" name="dataSelezionata" value="{{data}}">
+                <tr>
+                    <td><input type="hidden" name="dataSelezionata" value="{{data}}"></td>
+                </tr>
             </table>
-        </form>
-        {% endif %}
+        </div>
+    </form>
+    {% endif %}
 {%endif %}
 
 
