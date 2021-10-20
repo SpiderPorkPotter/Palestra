@@ -60,7 +60,7 @@
                 <p><a class="btn btn-default btn-lg" href="#"><i class="icon-ok"></i>Prenotati</a></p>
             </div>
         </div>
-    </div>
+    </div> 
 </div>
 
 <table class="table">
@@ -80,5 +80,28 @@
     </tr>
     {% endfor %}
 </table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+<canvas id="lineChart" width="700" height="350" ></canvas>
+<script>
+    var ctx = document.getElementById("lineChart").getContext("2d")
+    var lineChart = new Chart(ctx , {
+        type: "bar",
+        data: {
+            labels: {{ nome_giorni_della_settimana | safe }},
+            datasets: [
+                {
+                    label: "Media Affluenza Settimanale",
+                    data: {{ medie | safe }},
+                    fill: false,
+                    borderColor: "rgb(0 ,0, 0)",
+                    lineTension: "0.2"
+                
+                }
+            ]
+        },
+    options: {responsive:  true}
+    });
+</script>
 
 {% endblock %}
