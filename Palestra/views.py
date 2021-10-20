@@ -462,7 +462,7 @@ def corsi():
            return  render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         
     else: 
-        return render_template( 'corsi.html',title='Corsi Disponibili' )
+        return redirect(url_for("home"))
 
 
 @app.route('/istruttori')

@@ -5,7 +5,7 @@
 
 <h1>Sono la pagina del calendario</h1>
 
-<table class="table"">
+<table class="table">
     <th> <form action="/calendario" method="POST">
         <input name="cambiaMese" type="submit" value="<-">
         <input name="meseCorrenteSelezionato" type="hidden" value="{{meseNumerico}}">
@@ -44,17 +44,4 @@
         
 </table>
 
-
-
-
-<script >
-    var giorno =  document.getElementsByName("GiornoSelezionato");
-    console.log(giorno)
-    for(var i =0 ; i < giorno.length; i++){
-        giorno[i].addEventListener("mouseover", function() {
-            //inserire preview corsi
-            console.log("ciao")})
-    }
-
-</script>
 {% endblock %}

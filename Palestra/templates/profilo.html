@@ -4,7 +4,7 @@
 
 
 <div class="container">
-
+    <h4>INFORMAZIONI PERSONALI </h4>
     <ul id="users">
         <li>
             <!--dati_utente � l'oggetto utente. Cio� come una scatola che contiene le info della
@@ -25,17 +25,19 @@
             <span class="field-name">Sei un </span>
             <span class="field-value" style="color: darkorchid  ; font-weight: bold; "> {{ ruolo }}</span>
         </li>
+        <li>
+            <span class="field-name">Codice Fiscale:</span>
+            <span class="field-value">{{ dati_utente['codice_fiscale'] }}</span>
+        </li>
+        <li>
+            <span class="field-name">Email:</span>
+            <span class="field-value">{{ dati_utente['email'] }}</span>
+        </li>
     </ul>
     <hr />
 </div>
 
-{% if ruolo == 'istruttore' %}
-    <div>
-        <ul>
-            <li><a href="{{ url_for('corsi') }}">Vai ai corsi</a></li>
-        </ul>
-    </div>
-{% endif %}
+
 
 {% if ruolo == 'capo' %}
 <div>
