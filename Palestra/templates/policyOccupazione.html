@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<br />
+<br >
 <form action="/policy_occupazione" method="post">
     <div class="form-group">
         <label for="dpcm-start">Inserisci la data di inizio </label>
@@ -24,15 +24,72 @@
         <th scope="col"> Percentuale </th>
         <th scope="col"> Data inizio</th>
         <th scope="col"> Data fine</th>
+        <th scope="col"> </th>
     </tr>
     {% for row in policies %}
-    <tr>
-        <td>{{row['percentuale_occupabilità'] }} </td>
-        <td>{{ row['data_inizio'] }}</td>
-        <td>{{ row['data_fine'] }}</td>
-    </tr>
+    <tr name="riga"><td>{{row['percentuale_occupabilità'] }} </td><td>{{ row['data_inizio'] }}</td><td>{{ row['data_fine'] }}</td><td><input type="hidden" name="vecchiaDataInizio" value="{{ row['data_inizio'] }}"><input type="hidden" name="vecchiaDataFine" value="{{ row['data_fine'] }}"><input type="hidden" name="percentuale_occupabilitaSelezionata" value="{{ row['percentuale_occupabilità'] }}"><input id="id_btn_nuovi_input" type="button" name="mostraNuoviInput" value="Modifica" ></td></tr>
+
     {% endfor %}
 </table>
+
+<script>
+var arr_righe = document.getElementsByName("riga")
+console.log(arr_righe)
+for( var r= 0; r < arr_righe.length; r++ ){
+    var single_nodo_riga = arr_righe[r]
+    var singola_riga = single_nodo_riga.childNodes
+    console.log(singola_riga)
+    var inputs_td = singola_riga[3].childNodes
+    console.log(inputs_td)
+    var vecchiaDataInizio = inputs_td[0] 
+    var vecchiaDataFine = inputs_td[1]
+    var percOccSelezionata = inputs_td[2]
+    
+    input_type_button = inputs_td[3]
+    
+    
+    input_type_button.addEventListener("click", function(){
+    
+
+
+    var nuovoForm = document.createElement("form")
+    nuovoForm.setAttribute("action","/policy_occupazione")
+    nuovoForm.setAttribute("method","post")
+
+    var nuovoInizio = document.createElement("input")
+        nuovoInizio.setAttribute("type","date")
+        nuovoInizio.setAttribute("name","dataInizioModicata_"+ r)
+        nuovoForm.appendChild(nuovoInizio)
+
+    var nuovoFine = document.createElement("input")
+        nuovoFine.setAttribute("type","date")
+        nuovoFine.setAttribute("name","dataFineModificata_" + r )
+        nuovoForm.appendChild(nuovoFine)
+
+    var nuovoPercentuale = document.createElement("input")
+        nuovoPercentuale.setAttribute("type","number")
+        nuovoPercentuale.setAttribute("name","percModificata_"+ r)
+        nuovoPercentuale.setAttribute("min","0")
+        nuovoPercentuale.setAttribute("max","100")
+        nuovoPercentuale.setAttribute("step","5")
+        nuovoForm.appendChild(nuovoPercentuale)
+    var invio = document.createElement("input")
+        invio.setAttribute("type","submit")
+        invio.setAttribute("name","confermaModifica_" + r)
+        invio.setAttribute("value","Conferma Modifiche")
+        nuovoForm.appendChild(invio)
+
+    var ancora = document.createElement("td")
+        ancora.appendChild(nuovoForm)    
+        single_nodo_riga.appendChild(ancora)
+    
+    })
+
+
+} </script>   
+   
+
+
 
 
 
@@ -63,9 +120,7 @@
 
     var df = document.getElementById('data_fine')
     df.addEventListener('change', callback)
-
-
-
+   
 </script>
 
 {% endblock %}
