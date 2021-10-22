@@ -654,6 +654,16 @@ def crea_sala():
 
 @app.route('/policy_occupazione', methods=['POST', 'GET'])
 def policy_occupazione():
+
+
+    #update della policy modificata
+    if "confermaModifica" in request.form and "dataInizioModificata" in request.form and "dataFineModificata" in request.form and "percModificata" in request.form and "id_policy" in request.form:
+
+
+        with engine.connect() as conn:
+            s = text("UPDATE policy_occupazione SET data_inizio=:inizio , data_fine = :fine , percentuale_occupabilità = :perc WHERE id_policy=:id")
+            conn.execute(s, inizio=request.form['dataInizioModificata'],fine=request.form['dataFineModificata'], perc = request.form['percModificata'], id=request.form['id_policy']  )
+            
     
     tutte_le_policy = text("SELECT * FROM policy_occupazione ")
     with engine.connect() as conn:
@@ -680,7 +690,7 @@ def policy_occupazione():
         with engine.connect() as conn:
             conn.execute(inserimento_policy, i=data_inizio, f=data_fine, p=perc)
             flash("inserimento riuscito")
-        
+
     return render_template("policyOccupazione.html", title = "Occupazione", policies  = policies )
 
 
