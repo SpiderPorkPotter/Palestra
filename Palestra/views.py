@@ -242,13 +242,14 @@ def profilo():
                 id_sala=request.form['idSala']
                 cf_utente=request.form['codiceFiscaleUtente']
                 id_fascia=request.form['idFascia']
-                #inserisco il posto x il corso
+                #inserisco il posto x la sala pessi
                 try:
                     q_insert_posto = text("INSERT INTO prenotazioni(data,codice_fiscale,id_sala,id_fascia, codice_prenotazione) VALUES(:d,:cf,:ids,:idf, :cod_prenotazione) ")
                     with engine.connect() as conn:
                         conn.execute(q_insert_posto,d=data_prenotata, cf=cf_utente, ids=id_sala, idf=id_fascia, cod_prenotazione = creaIDprenotazione())
                         
                 except:
+                    
                     #QUA SCATAA IL TRIGGER CHE GENERA UN ECCEZIONE!!!!!
                     flash("AIA SONO FINITI I POSTI")
                     
@@ -462,7 +463,8 @@ def corsi():
                     with engine.connect() as conn:
                         sale_disp_con_fasce = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
                 
-                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo, sale_disp_con_fasce =sale_disp_con_fasce , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente, sale_pesi_libere = sale_pesi_libere )
+                    return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo, sale_disp_con_fasce =sale_disp_con_fasce , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente, sale_pesi_libere = sale_pesi_libere )
+                return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo,  info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente, sale_pesi_libere = sale_pesi_libere )
         else:
            return  render_template( 'corsi.html',title='Corsi Disponibili', data = data)   
         
