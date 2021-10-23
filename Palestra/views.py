@@ -249,16 +249,19 @@ def profilo():
                         conn.execute(q_insert_posto,d=data_prenotata, cf=cf_utente, ids=id_sala, idf=id_fascia, cod_prenotazione = creaIDprenotazione())
                         
                 except:
-                    raise
+                    #QUA SCATAA IL TRIGGER CHE GENERA UN ECCEZIONE!!!!!
+                    flash("AIA SONO FINITI I POSTI")
+                    
             
 
             #se è stata confermata la cancellazione cancella la prenotazione
             try:
                 if "Conferma" in request.form and request.form['Conferma'] == "Conferma Cancellazione" and "id_prenotazione_key" in  request.form :
-                
-                    q_cancellazione = text("DELETE FROM prenotazioni WHERE codice_prenotazione=:c ")
+                    #q_cancellazione = text("DELETE FROM prenotazioni WHERE codice_prenotazione=:c ")
+                    #q_disabilita/elimina la prenotazione CON VALORE 3 perchè la ha eliminata un iscritto
+                    q_disabilita = text("UPDATE prenotazioni SET eliminata = 3 WHERE codice_prenotazione=:c ")
                     with engine.connect() as conn:
-                        conn.execute(q_cancellazione, c=request.form['id_prenotazione_key'])
+                        conn.execute(q_disabilita, c=request.form['id_prenotazione_key'])
                         
             except:
                 raise
@@ -273,7 +276,8 @@ def profilo():
                     id_sala = request.form['id_sala']
                     with engine.connect() as conn:
                         
-                        s = text("DELETE FROM prenotazioni WHERE data = :data AND id_sala = :ids AND id_fascia = :idf")
+                        #s = text("DELETE FROM prenotazioni WHERE data = :data AND id_sala = :ids AND id_fascia = :idf")
+                        s = text("UPDATE prenotazioni SET eliminata = 2 WHERE data = :data AND id_sala = :ids AND id_fascia = :idf ")
                         conn.execute(s, data = dataCorso, ids = id_sala, idf=id_fascia)
                         s = text("DELETE FROM sale_corsi WHERE id_corso = :idc AND id_sala = :ids AND data = :data ")
                         conn.execute(s,idc=id_corso,ids = id_sala , data = dataCorso )
@@ -284,7 +288,8 @@ def profilo():
 
             #prenotazioni gia fatte x questo utente
             q_lista_prenotazioni = text("SELECT p.data, p.id_sala, fs.id_fascia, p.codice_prenotazione, fs.inizio, fs.fine, "
-                                    "CASE WHEN s.solo_attrezzi is TRUE THEN 'Pesi' ELSE 'Corso' END tipo_sala "
+                                    "CASE WHEN s.solo_attrezzi is TRUE AND p.eliminata IS NULL THEN 'Pesi' "
+                                        "WHEN s.solo_attrezzi is FALSE AND p.eliminata IS NULL THEN 'Corso' END tipo_sala "
                                     "FROM prenotazioni p JOIN sale s ON p.id_sala = s.id_sala JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente" )
             with engine.connect() as conn:
                 tab_prenotazioni_effettuate = conn.execute(q_lista_prenotazioni,id_utente=id)
@@ -423,14 +428,14 @@ def corsi():
                             "WHERE s1.solo_attrezzi IS TRUE " 
 		                            "AND s1.id_sala NOT IN (SELECT s.id_sala "
                                                             "FROM prenotazioni p JOIN sale s ON p.id_sala = s1.id_sala " 
-                                                            "WHERE p.data= :input_data AND s.solo_attrezzi IS TRUE ) "
+                                                            "WHERE p.data= :input_data AND s.solo_attrezzi IS TRUE AND p.eliminata IS NULL ) "
                                                             
 		                            "AND s1.posti_totali > (SELECT count(*) " 
 							                                "FROM prenotazioni p JOIN sale s ON p.id_sala = s1.id_sala "
-							                                "WHERE p.data= :input_data AND s.solo_attrezzi IS TRUE )"
+							                                "WHERE p.data= :input_data AND s.solo_attrezzi IS TRUE AND p.eliminata IS NULL )"
                                     "AND f1.id_fascia NOT IN (SELECT p.id_fascia "
                                                             "FROM prenotazioni p  " 
-                                                            "WHERE p.data= :input_data AND p.codice_fiscale = :cf) "
+                                                            "WHERE p.data= :input_data AND p.codice_fiscale = :cf AND p.eliminata IS NULL) "
                                     "AND f1.id_fascia NOT IN (SELECT id_fascia "
                                                             "FROM sale_corsi sc JOIN corsi c ON  (sc.id_corso= c.id_corso  ) "
                                                             "WHERE  c.codice_fiscale_istruttore = :cf AND sc.data = :input_data ) "
@@ -743,7 +748,7 @@ def creaIDtipologiaCorso():
 
 def creaIDprenotazione():
      with engine.connect() as conn:
-        s = "SELECT COUNT(*) AS num_prenotazioni FROM prenotazioni"
+        s = "SELECT COUNT(*) AS num_prenotazioni FROM prenotazioni WHERE eliminata IS NULL"
         res = conn.execute(s)
         for row in res:
             num_prenotazioni = row['num_prenotazioni']

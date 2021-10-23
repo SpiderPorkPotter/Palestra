@@ -83,9 +83,9 @@ class Persone(UserMixin, Base, db.Model):
 
 class PolicyOccupazione(Base):
     __tablename__ = 'policy_occupazione'
-
-    data_inizio = Column(Date, primary_key=True, nullable=False)
-    data_fine = Column(Date, primary_key=True, nullable=False)
+    id_policy = Column(primary_key=True, nullable=False) #di default è autoincrement
+    data_inizio = Column(Date, primary_key=True)
+    data_fine = Column(Date, nullable=False)
     percentuale_occupabilità = Column(Integer, nullable=False)
 
 
@@ -134,7 +134,7 @@ class Prenotazioni(Base):
     id_sala = Column(ForeignKey('sale.id_sala'), nullable=False, index=True)
     id_fascia = Column(ForeignKey('fascia_oraria.id_fascia'), nullable=False, index=True, server_default=text("nextval('prenotazioni_id_fascia_seq'::regclass)"))
     codice_prenotazione = Column(Integer, primary_key=True)
-
+    eliminata = Column(Integer,nullable=True)
     persone = relationship('Persone')
     fascia_oraria = relationship('FasciaOraria')
     sale = relationship('Sale')
