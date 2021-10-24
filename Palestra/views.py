@@ -289,9 +289,9 @@ def profilo():
 
             #prenotazioni gia fatte x questo utente
             q_lista_prenotazioni = text("SELECT p.data, p.id_sala, fs.id_fascia, p.codice_prenotazione, fs.inizio, fs.fine, "
-                                    "CASE WHEN s.solo_attrezzi is TRUE AND p.eliminata IS NULL THEN 'Pesi' "
-                                        "WHEN s.solo_attrezzi is FALSE AND p.eliminata IS NULL THEN 'Corso' END tipo_sala "
-                                    "FROM prenotazioni p JOIN sale s ON p.id_sala = s.id_sala JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente" )
+                                    "CASE WHEN s.solo_attrezzi is TRUE  THEN 'Pesi' "
+                                        "WHEN s.solo_attrezzi is FALSE  THEN 'Corso' END tipo_sala "
+                                    "FROM prenotazioni p JOIN sale s ON p.id_sala = s.id_sala JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente AND p.eliminata IS NULL" )
             with engine.connect() as conn:
                 tab_prenotazioni_effettuate = conn.execute(q_lista_prenotazioni,id_utente=id)
 
@@ -427,13 +427,9 @@ def corsi():
                             "SELECT s1.id_sala, f1.id_fascia , f1.inizio, f1.fine "
                             "FROM sale s1  JOIN fascia_oraria f1 ON (f1.giorno = :intGiorno AND f1.inizio >= :oraInizio AND f1.fine <= :oraFine) "
                             "WHERE s1.solo_attrezzi IS TRUE " 
-		                            "AND s1.id_sala NOT IN (SELECT s.id_sala "
-                                                            "FROM prenotazioni p JOIN sale s ON p.id_sala = s1.id_sala " 
-                                                            "WHERE p.data= :input_data AND s.solo_attrezzi IS TRUE AND p.eliminata IS NULL ) "
-                                                            
 		                            "AND s1.posti_totali > (SELECT count(*) " 
 							                                "FROM prenotazioni p JOIN sale s ON p.id_sala = s1.id_sala "
-							                                "WHERE p.data= :input_data AND s.solo_attrezzi IS TRUE AND p.eliminata IS NULL )"
+							                                "WHERE p.data= :input_data AND s.solo_attrezzi IS TRUE AND p.eliminata IS NULL  AND p.id_fascia = f1.id_fascia )"
                                     "AND f1.id_fascia NOT IN (SELECT p.id_fascia "
                                                             "FROM prenotazioni p  " 
                                                             "WHERE p.data= :input_data AND p.codice_fiscale = :cf AND p.eliminata IS NULL) "
