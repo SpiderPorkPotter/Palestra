@@ -746,7 +746,7 @@ def creaIDtipologiaCorso():
 
 def creaIDprenotazione():
      with engine.connect() as conn:
-        s = "SELECT COUNT(*) AS num_prenotazioni FROM prenotazioni WHERE eliminata IS NULL"
+        s = "SELECT COUNT(*) AS num_prenotazioni FROM prenotazioni"
         res = conn.execute(s)
         for row in res:
             num_prenotazioni = row['num_prenotazioni']
