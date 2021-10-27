@@ -668,31 +668,47 @@ def policy_occupazione():
             conn.execute(s, inizio=request.form['dataInizioModificata'],fine=request.form['dataFineModificata'], perc = request.form['percModificata'], id=request.form['id_policy']  )
             
     
+   
+    #inserimento di una policy    
+    if request.method== 'POST' and 'confermaPolicy' in request.form:
+        input_data_inizio = request.form['dpcm-start']    
+        input_data_fine = request.form['dpcm-end']
+        perc = request.form['perc']
+
+        with engine.connect() as conn:
+            s = text("SELECT id_policy "
+                    "FROM policy_occupazione p "
+                    "WHERE p.id_policy in (	SELECT p2.id_policy "
+						                    "FROM policy_occupazione p2 "
+						                    "WHERE p2.id_policy = p.id_policy "
+								            "AND "
+							                "( "
+                                                "( :di BETWEEN p2.data_inizio and p2.data_fine OR :df BETWEEN p2.data_inizio and p2.data_fine) "
+                                                "OR :di < now() " 
+                                                "OR :df < now() "
+                                                "OR (:di <= p2.data_inizio AND :df >= p2.data_fine) "
+								            ") "
+					                    ")"
+                    )
+            lista_policy_in_contrasto = conn.execute(s, di=input_data_inizio , df=input_data_fine)
+
+        errore = "ok"
+        for row in lista_policy_in_contrasto:
+            if row['id_policy'] != null:
+                errore = "Controlla meglio le date"
+        
+        if errore != "ok":
+            flash(errore)
+        else:    
+            inserimento_policy = text("INSERT INTO policy_occupazione(data_inizio,data_fine, percentuale_occupabilità) VALUES(:i , :f, :p) ")
+            with engine.connect() as conn:
+                conn.execute(inserimento_policy, i=input_data_inizio, f=input_data_fine, p=perc)
+                flash("inserimento riuscito")
+
+    #stampa tutte le policy
     tutte_le_policy = text("SELECT * FROM policy_occupazione ")
     with engine.connect() as conn:
         policies = conn.execute(tutte_le_policy)
-        copia = conn.execute(tutte_le_policy)
-    
-    lista_date_inizio = []
-    lista_date_fine = []   
-    for row in copia:
-        if row['data_inizio'] != null and row['data_fine'] != null: 
-            lista_date_inizio.append(row['data_inizio'])
-            lista_date_fine.append(row['data_fine'])
-
-
-    if request.method== 'POST' and 'confermaPolicy' in request.form:
-        data_inizio = request.form['dpcm-start']    
-        data_fine = request.form['dpcm-end']
-        perc = request.form['perc']
-
-        if data_inizio in lista_date_inizio or data_fine in lista_date_fine:
-            flash('controlla meglio le date')
-        else:    
-            inserimento_policy = text("INSERT INTO policy_occupazione(data_inizio,data_fine, percentuale_occupabilità) VALUES(:i , :f, :p) ")
-        with engine.connect() as conn:
-            conn.execute(inserimento_policy, i=data_inizio, f=data_fine, p=perc)
-            flash("inserimento riuscito")
 
     return render_template("policyOccupazione.html", title = "Occupazione", policies  = policies )
 
