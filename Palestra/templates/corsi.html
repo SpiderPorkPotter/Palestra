@@ -34,7 +34,36 @@
     </script>
 
 
-    {% if ruolo == 'iscritto' or ruolo == 'istruttore' %}
+    {% if ruolo == 'capo' %}
+    <table class="table">
+        <caption><strong> INFORMAZIONI</strong></caption>
+        <tr>
+            <th scope="col">Sala</th>
+            <th scope="col">Dalle</th>
+            <th scope="col">Alle</th>
+            <th scope="col">Codice fiscale</th>
+            <th scope="col">Nome</th>
+            
+            <th scope="col">Telefono</th>
+        </tr>
+        {% for row in tab_lista_prenotazioni %}
+        <tr>
+            <td>Sala {{row['id_sala']}}</td>
+            <td>{{row['inizio']}} </td> 
+            <td>{{row['fine']}} </td> 
+            <td>{{row['codice_fiscale']}}</td> 
+            <td>{{row['nome']}} {{row['cognome']}}</td>
+            <td>{{row['telefono']}}</td> 
+                
+        </tr>    
+        {% endfor %}
+    {% endif %}  
+
+
+     
+
+
+    {% if ruolo == 'iscritto' or ruolo == 'istruttore'  %}
     <table class="table">
         <caption><strong>CORSI DISPONIBILI</strong></caption>
         <tr>
@@ -57,7 +86,10 @@
                         <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
                         <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
                         <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
-                        <input type="submit" name="prenotaCorso" value="Prenotati" class="btn btn-secondary">
+                        
+                            <input type="submit" name="prenotaCorso" value="Prenotati" class="btn btn-secondary">
+                        
+                        
                     </form>
                 </td>    
             </tr>    
@@ -80,7 +112,10 @@
                     <input type="hidden" name="idSala" value="{{row['id_sala']}}"  >  
                     <input type="hidden" name="codiceFiscaleUtente" value="{{cf_utente}}">
                     <input type="hidden" name="idFascia" value="{{row['id_fascia']}}">
-                    <input type="submit" name="prenotaSalaPesi" value="Prenotati" class="btn btn-primary">
+                    
+                        <input type="submit" name="prenotaSalaPesi" value="Prenotati" class="btn btn-primary">
+                    
+                    
                 </form>
             </td>
         </tr>

@@ -403,7 +403,18 @@ def corsi():
                 input_ora_inizio = request.form['ora_iniziale_ricerca']
                 input_ora_fine = request.form['ora_finale_ricerca']
 
-                if ruolo == "iscritto" or ruolo == "istruttore": #ricerca corsi disponibili
+
+                if ruolo == 'capo':
+                    with engine.connect() as conn:
+                        s = text("SELECT pr.id_sala , f.inizio, f.fine , pr.codice_fiscale , p.nome , p.cognome, i.telefono "
+                                "FROM prenotazioni pr JOIN fascia_oraria f ON (f.id_fascia = pr.id_fascia) JOIN persone p ON (p.codice_fiscale = pr.codice_fiscale) JOIN info_contatti i ON (i.codice_fiscale = pr.codice_fiscale)" 
+                                "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND pr.data = :input_data "
+                                
+                            )
+                        tab_lista_prenotazioni = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB )                  
+                    return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo,  tab_lista_prenotazioni = tab_lista_prenotazioni )
+
+                if ruolo == "iscritto" or ruolo == "istruttore" : #ricerca corsi disponibili
                     
                     with engine.connect() as conn:
                         q_lista_tipologie = text("SELECT id_tipologia, nome_tipologia FROM tipologie_corsi ")
@@ -444,7 +455,7 @@ def corsi():
                             sale_pesi_libere = conn.execute(q_sale_pesi_libere, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB,cf= id_utente )
                     except:
                         raise
-
+                
 
                 if ruolo == "istruttore": 
                
