@@ -310,6 +310,11 @@ def profilo():
             if ruolo == "iscritto":
                 return render_template("profilo.html",title="profilo", dati_utente = dati_utente_corrente, ruolo=ruolo, prenotazioni_effettuate=tab_prenotazioni_effettuate)
         if ruolo == "capo": # se è il capo
+            if palestra_gia_creata() == True:
+                mostra_link_creazione_palestra = "False";
+            else:
+                mostra_link_creazione_palestra_abilitato = "True";
+
             #puo fare upgrade da iscritto a istruttore e viceversa
             if 'modificavalori' in request.form and  request.form['modificavalori'] == "ModificaPermessi":
                 cf_passato = request.form['id_passato']
@@ -329,7 +334,7 @@ def profilo():
                 s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo='3' OR p.ruolo='2' ORDER BY p.ruolo ")
                 lista_persone = conn.execute(s)
                   
-            return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo=ruolo )
+            return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo=ruolo, mostra_link_creazione_palestra = mostra_link_creazione_palestra )
     else :
         return render_template("registrazione.html", title="registrazione")
    
@@ -834,4 +839,15 @@ def almeno_una_settimana_nelle_policy():
         n = n + delta.days
 
     return n >= 7
+
+
+def palestra_gia_creata():
+    with engine.connect() as conn:
+        s = text("SELECT COUNT(*) as num_fasce FROM fascia_oraria")
+        tab = conn.execute(s)
+        for row in tab:
+            if row['num_fasce'] != 0 :
+                return True
+            else:
+                return False
 

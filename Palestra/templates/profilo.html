@@ -44,7 +44,9 @@
         <li><a href="{{ url_for('policy_occupazione') }}">Policy occupazione</a></li>
         <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
         <li><a href="{{ url_for('istruttori') }}">Chi sono gli istruttori?</a></li>
-        <li><a href="{{ url_for('creazionePalestra') }}">Crea una palestra</a></li>
+        {% if  mostra_link_creazione_palestra == "True" %}
+            <li><a href="{{ url_for('creazionePalestra') }}">Crea una palestra</a></li>
+        {% endif %}
     </ul>
 </div>
 
