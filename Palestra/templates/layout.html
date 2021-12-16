@@ -52,7 +52,7 @@
                     {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('profilo') }}">Profilo</a></li>
                     <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
-                    <li><a href="{{ url_for('corsi') }}">Corsi</a></li>
+                    <li><a href="{{ url_for('lista_corsi') }}">Lista Corsi</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
 
                     {% else %}

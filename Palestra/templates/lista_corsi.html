@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2> lista corsi</h2>
+<table class="table">
+
+    <tr>
+        <th scope="col">Nome del corso</th>
+        <th scope="col">Istruttore</th>
+        <th scope="col">Tipologia Corso</th>
+        <th scope="col">Descrizione</th>
+        <th scope="col">Telefono</th>
+    </tr>
+    {% for row in tab_lista_corsi %}
+    <tr>
+        <td>{{ row['nome_corso'] }}</td>
+        <td>{{ row['cognome'] }} {{ row['nome'] }}</td>
+        <td>{{ row['nome_tipologia'] }}</td>
+        <td>{{ row['descrizione'] }}</td>
+        <td>{{ row['telefono'] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
+

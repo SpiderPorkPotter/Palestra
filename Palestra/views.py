@@ -430,7 +430,7 @@ def corsi():
                                     "WHERE pr.data = :input_data) "
                             
                             
-                            "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data) "
+                            "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data AND codice_fiscale = :id_utente AND eliminata ID NULL) "
                             )
 
 
@@ -722,6 +722,23 @@ def policy_occupazione():
         policies = conn.execute(tutte_le_policy)
 
     return render_template("policyOccupazione.html", title = "Occupazione", policies  = policies )
+
+
+@app.route('/corsi/lista',  methods=['POST', 'GET'])
+def lista_corsi():
+
+    #----------------------------------------------------DA FAREEEEE
+    s = text("SELECT distinct c.nome_corso,  p.nome, p.cognome,t.nome_tipologia, t.descrizione , i.telefono FROM corsi c JOIN persone p ON (p.codice_fiscale = c.codice_fiscale_istruttore AND p.ruolo = 2) " 
+            "JOIN tipologie_corsi t ON  t.id_tipologia = c.id_tipologia "
+            "JOIN info_contatti i ON c.codice_fiscale_istruttore = i.codice_fiscale "
+            "GROUP BY c.nome_corso, c.codice_fiscale_istruttore , p.nome, p.cognome ,t.nome_tipologia, t.descrizione,  i.telefono ;"
+            )
+    with engine.connect() as conn:
+        tab_lista_corsi = conn.execute(s)
+
+
+    return render_template('lista_corsi.html', tab_lista_corsi = tab_lista_corsi)
+
 
 
 #-------------------UTILI--------------
