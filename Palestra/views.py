@@ -27,8 +27,8 @@ mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto",
 
 #psycopg2 è il driver che si usa per comunicare col database
 
-DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-#DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/PalestraSeria"
 engine = create_engine(DB_URI)
 
 #inizializza la libreria che gestisce i login
@@ -324,6 +324,7 @@ def profilo():
                         s = text("UPDATE persone SET ruolo = 3 WHERE codice_fiscale = :cf AND ruolo <> '3' " )
                         conn.execute(s,cf=cf_passato)
             
+
             with engine.connect() as conn:
                 s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo='3' OR p.ruolo='2' ORDER BY p.ruolo ")
                 lista_persone = conn.execute(s)
@@ -407,7 +408,7 @@ def corsi():
                 if ruolo == 'capo':
                     with engine.connect() as conn:
                         s = text("SELECT pr.id_sala , f.inizio, f.fine , pr.codice_fiscale , p.nome , p.cognome, i.telefono "
-                                "FROM prenotazioni pr JOIN fascia_oraria f ON (f.id_fascia = pr.id_fascia) JOIN persone p ON (p.codice_fiscale = pr.codice_fiscale) JOIN info_contatti i ON (i.codice_fiscale = pr.codice_fiscale)" 
+                                "FROM prenotazioni pr JOIN fascia_oraria f ON (f.id_fascia = pr.id_fascia) JOIN persone p ON (p.codice_fiscale = pr.codice_fiscale) JOIN info_contatti i ON (i.codice_fiscale = pr.codice_fiscale) " 
                                 "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND pr.data = :input_data "
                                 
                             )
@@ -429,8 +430,8 @@ def corsi():
                                     "JOIN fascia_oraria f1 ON f1.id_fascia=f.id_fascia "
                                     "WHERE pr.data = :input_data) "
                             
-                            
-                            "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data AND codice_fiscale = :cf AND eliminata IS NULL) "
+                                    "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data AND codice_fiscale = :cf AND eliminata IS NULL) "
+                          
                             )
 
 
