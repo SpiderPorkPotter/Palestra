@@ -467,9 +467,11 @@ def corsi():
                         "GROUP BY  s.id_sala, f1.id_fascia "
                         "ORDER BY f1.id_fascia "
                     )
-                    with engine.connect() as conn:
-                        sale_disp_con_fasce = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
-                
+                    try:
+                        with engine.connect() as conn:
+                            sale_disp_con_fasce = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
+                    except: 
+                        raise
                     return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo, sale_disp_con_fasce =sale_disp_con_fasce , info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente, sale_pesi_libere = sale_pesi_libere )
                 return render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo,  info_corsi =corsi_liberi, lista_tipologie_tab = lista_tipologie_tab,cf_utente = id_utente, sale_pesi_libere = sale_pesi_libere )
         else:
