@@ -112,11 +112,11 @@ def home():
 
 
 
-
+#PRIMA medie = arr_medie, per testare l'ho messo a medie = 0. Così all'inizio non mi rompeva le scatole
 
     return render_template(
         'home.html',
-        title='Home Page', nome_mesi = mesi, lezioni_al_mese = tab_totale_lezioni_svolte_al_mese, mesi_con_piu_corsi = mesi_con_max_corsi ,num_corsi =  max_corsi, medie = arr_medie , nome_giorni_della_settimana = nome_giorni_della_settimana
+        title='Home Page', nome_mesi = mesi, lezioni_al_mese = tab_totale_lezioni_svolte_al_mese, mesi_con_piu_corsi = mesi_con_max_corsi ,num_corsi =  max_corsi, medie = 0 , nome_giorni_della_settimana = nome_giorni_della_settimana
     )
 
 
@@ -136,6 +136,8 @@ def login():
             #se tutto va bene, effettua il login, aggiungendo l'utente
             #alla sessione e riportandolo alla schermata profilo
             login_user(utente)
+            if ema== "admin@gmail.com" and pwd == "admin":
+                return redirect(url_for('admin'))
             return redirect(url_for('profilo'))
         #else
         flash('Email o Password errati')

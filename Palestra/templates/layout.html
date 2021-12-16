@@ -49,22 +49,37 @@
         temporanea, per vedere se effettivamente è loggato, poi
         stabiliamo meglio quali si vedono e quali no
     -->
+                    <!-- se l'utente is autenticato-->
                     {% if current_user.is_authenticated %}
+
+                    <!-- se l'utente is ADMIN (RUOLO 0 anche nel db)-->
+                    {% if current_user.get_role() == 0 %}
+                    <li><a href="{{ url_for('admin') }}">admindb</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <!-- se l'utente is CAPO-->
+                    {% elif current_user.get_role()== 1 %}
+                    <li><a href="{{ url_for('profilo') }}">Profilo</a></li>
+                    <li><a href="{{ url_for('istruttori') }}">Istruttori</a></li>
+                    <li><a href="{{ url_for('policy_occupazione') }}">Policy</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <!-- se l'utente is ISTRUTTORE-->
+                    {% elif current_user.get_role() == 2 %}
                     <li><a href="{{ url_for('profilo') }}">Profilo</a></li>
                     <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
                     <li><a href="{{ url_for('lista_corsi') }}">Lista Corsi</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
-
+                    <!-- se l'utente is ISCRITTO-->
+                    {% elif current_user.get_role() == 3 %}
+                    <li><a href="{{ url_for('profilo') }}">Profilo</a></li>
+                    <li><a href="{{ url_for('calendario') }}">Calendario</a></li>
+                    <li><a href="{{ url_for('lista_corsi') }}">Lista Corsi</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    {% endif %}
+                    <!-- se l'utente is VISITATORE (non autenticato)-->
                     {% else %}
                     <li><a href="{{ url_for('login') }}">Login</a></li>
                     <li><a href="{{ url_for('registrazione') }}">Registrazione</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                    <li><a href="{{ url_for('istruttori') }}">Istruttori</a></li>
-                    {% endif %}
-                    <li><a href="{{ url_for('admin') }}">admindb</a></li>
-                    <li><a href="{{ url_for('crea_sala') }}">Crea Sala</a></li>
-                    {% if current_user.is_authenticated and current_user.get_role() == 1 %}
-                    <li><a href="{{ url_for('policy_occupazione') }}">Policy</a></li>
                     {% endif %}
 
                 </ul>

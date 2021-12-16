@@ -6,42 +6,54 @@
 <h1>Sono la pagina del calendario</h1>
 
 <table class="table">
-    <th> <form action="/calendario" method="POST">
-        <input name="cambiaMese" type="submit" value="<-">
-        <input name="meseCorrenteSelezionato" type="hidden" value="{{meseNumerico}}">
-        <input name="annoCorrenteSelezionato" type="hidden" value="{{annoNumerico}}">
-    </form>
+    <th>
+        <form action="/calendario" method="POST">
+            <input name="cambiaMese" type="submit" value="<-">
+            <input name="meseCorrenteSelezionato" type="hidden" value="{{meseNumerico}}">
+            <input name="annoCorrenteSelezionato" type="hidden" value="{{annoNumerico}}">
+        </form>
     </th>
-<th></th><th></th>
-    <th> {{nomeMese}} {{annoNumerico}}</th>  
-    <th></th><th></th>
-    <th> <form action="/calendario" method="POST">
-        <input name="cambiaMese" type="submit" value="->">
-        <input name="meseCorrenteSelezionato" type="hidden" value="{{meseNumerico}}">
-        <input name="annoCorrenteSelezionato" type="hidden" value="{{annoNumerico}}">
-    </form>
+    <th></th>
+    <th></th>
+    <th> {{nomeMese}} {{annoNumerico}}</th>
+    <th></th>
+    <th></th>
+    <th>
+        <form action="/calendario" method="POST">
+            <input name="cambiaMese" type="submit" value="->">
+            <input name="meseCorrenteSelezionato" type="hidden" value="{{meseNumerico}}">
+            <input name="annoCorrenteSelezionato" type="hidden" value="{{annoNumerico}}">
+        </form>
     </th>
     <tr>{% for i in nome_giorni_settimana %} <td> {{i}} </td> {% endfor %} </tr>
     <tr>
-    {% for i in range(0,indice_settimana_del_primo_giorno)  %} <td></td> {% endfor %}
-       
-    {% for giorno in range(1, num_giorni+1) %}
+        {% for i in range(0,indice_settimana_del_primo_giorno)  %}
+        <td></td> {% endfor %}
+
+        {% for giorno in range(1, num_giorni+1) %}
         <td>
             <form method="POST" action='/corsi'>
-            {% if dataCorrente["giorno"] == giorno and dataCorrente["mese"] == meseNumerico and dataCorrente["anno"] == annoNumerico  %}
-            <input name="GiornoSelezionato" style="background-color:cyan" class="btn" type="submit" value="{{giorno}}">
-            {% else  %}
+
+                {% if dataCorrente["giorno"] == giorno and dataCorrente["mese"] == meseNumerico and dataCorrente["anno"] == annoNumerico  %}
+                <input name="GiornoSelezionato" style="background-color:cyan" class="btn" type="submit" value="{{giorno}}">
+
+                <!-- giorni non cliccabili perché antecedenti alla data di oggi-->
+                {% elif dataCorrente["giorno"] > giorno and dataCorrente["mese"] >= meseNumerico and dataCorrente["anno"] >= annoNumerico or dataCorrente["giorno"] <= giorno and dataCorrente["mese"] > meseNumerico  %}
+                <input name="GiornoSelezionato" style="background-color:darkgray" class="btn" disabled type="submit" value="{{giorno}}">
+                <!-- -->
+                {% else  %}
                 <input name="GiornoSelezionato" class="btn" type="submit" value="{{giorno}}">
-            {% endif %}
-            <input type="hidden" name="dataSelezionata" value="{{annoNumerico}} {{meseNumerico}} {{giorno}}">
+                {% endif %}
+                <input type="hidden" name="dataSelezionata" value="{{annoNumerico}} {{meseNumerico}} {{giorno}}">
             </form>
         </td>
         {% if (giorno + indice_settimana_del_primo_giorno ) % 7 == 0 %}
-            </tr><tr>
+    </tr>
+    <tr>
         {% endif %}
-    
-    {% endfor %}
-        
+
+        {% endfor %}
+
 </table>
 
 {% endblock %}
