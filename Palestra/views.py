@@ -430,7 +430,7 @@ def corsi():
                                     "WHERE pr.data = :input_data) "
                             
                             
-                            "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data AND codice_fiscale = :id_utente AND eliminata ID NULL) "
+                            "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data AND codice_fiscale = :cf AND eliminata ID NULL) "
                             )
 
 
