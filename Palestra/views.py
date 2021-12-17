@@ -19,16 +19,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 import re
 import numpy
+#importa va variabile per il database dal file __init__.py
+from .__init__ import DB_URI
 #costanti utili
 nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
 RUOLI = ["adminDB", "capo", "istruttore", "iscritto" ]
 mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
 
 
-#psycopg2  il driver che si usa per comunicare col database
-
-#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/PalestraSeria"
 engine = create_engine(DB_URI)
 
 
@@ -220,8 +218,10 @@ def profilo():
     if current_user != None:
         id = Persone.get_id(current_user)
         ruolo =RUOLI[Persone.get_role(current_user)]
-        dati_utente_corrente = Persone.query.join(InfoContatti,Persone.codice_fiscale == InfoContatti.codice_fiscale).filter_by(codice_fiscale = id).first()
+        dati_utente_corrente = Persone.query.join(InfoContatti,Persone.codice_fiscale == InfoContatti.codice_fiscale)\
+                                .add_columns(Persone.codice_fiscale,InfoContatti.telefono, Persone.email , Persone.cognome, Persone.nome, Persone.data_iscrizione).filter_by(codice_fiscale = id).first()
         print(ruolo)
+        
         if ruolo == "istruttore" or ruolo == "iscritto": #se è istruttore o iscritto
  
             if "prenotaCorso" in request.form and request.form['prenotaCorso'] == "Prenotati":

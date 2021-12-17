@@ -7,7 +7,7 @@
     <h4>INFORMAZIONI PERSONALI </h4>
     <ul id="users">
         <li>
-            <!--dati_utente � l'oggetto utente. Cio� come una scatola che contiene le info della
+            <!--dati_utente  l'oggetto utente. Cio come una scatola che contiene le info della
                 persona loggata nel momento corrente'-->
             <span class="field-name">Utente:</span>
             <span class="field-value">{{ dati_utente['nome'] }}</span>
@@ -28,6 +28,10 @@
         <li>
             <span class="field-name">Codice Fiscale:</span>
             <span class="field-value">{{ dati_utente['codice_fiscale'] }}</span>
+        </li>
+        <li>
+            <span class="field-name">Data Iscrizione:</span>
+            <span class="field-value">{{ dati_utente['data_iscrizione'] }}</span>
         </li>
         
     </ul>
