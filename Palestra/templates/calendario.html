@@ -37,7 +37,7 @@
                 {% if dataCorrente["giorno"] == giorno and dataCorrente["mese"] == meseNumerico and dataCorrente["anno"] == annoNumerico  %}
                 <input name="GiornoSelezionato" style="background-color:cyan" class="btn" type="submit" value="{{giorno}}">
 
-                <!-- giorni non cliccabili perché antecedenti alla data di oggi-->
+                <!-- giorni non cliccabili perch antecedenti alla data di oggi-->
                 {% elif dataCorrente["giorno"] > giorno and dataCorrente["mese"] >= meseNumerico and dataCorrente["anno"] >= annoNumerico or dataCorrente["giorno"] <= giorno and dataCorrente["mese"] > meseNumerico  %}
                 <input name="GiornoSelezionato" style="background-color:darkgray" class="btn" disabled type="submit" value="{{giorno}}">
                 <!-- -->

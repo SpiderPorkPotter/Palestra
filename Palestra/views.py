@@ -27,9 +27,10 @@ mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto",
 
 #psycopg2 è il driver che si usa per comunicare col database
 
-#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/PalestraSeria"
+DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+#DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/PalestraSeria"
 engine = create_engine(DB_URI)
+
 
 #inizializza la libreria che gestisce i login
 login_manager = LoginManager()
@@ -73,6 +74,7 @@ class RegistrazioneForm(FlaskForm):
 @app.route('/')
 @app.route('/home')
 def home():
+    
     #TODO:DA FAREEEEEEEEEEEEEEEEEEEEE
     with engine.connect() as conn:
         
@@ -94,21 +96,21 @@ def home():
 
 
         #affluenza media x ogni giorno della settimana
-        if almeno_una_settimana_nelle_policy():
+        #if almeno_una_settimana_nelle_policy():
             
-            cont_giorno_settimana  = contaGiorni()
-            print(cont_giorno_settimana)
-            s = text("SELECT * FROM vista_prenotazioni_settimana")
-            num_prenotazioni_per_giorno_settimana = conn.execute(s)
-            arr_medie = [0,0,0,0,0,0,0]
-            #calcolo le medie
-            for row in num_prenotazioni_per_giorno_settimana:
-                for i in range(0,len(arr_medie)):
-                    if cont_giorno_settimana[i] != 0 :
-                        arr_medie[i] = int(row[nome_giorni_della_settimana[i].lower()]) / cont_giorno_settimana[i]
-                    else:
-                        arr_medie[i] = 0
-                print(arr_medie)
+        cont_giorno_settimana  = contaGiorni()
+        print(cont_giorno_settimana)
+        s = text("SELECT * FROM vista_prenotazioni_settimana")
+        num_prenotazioni_per_giorno_settimana = conn.execute(s)
+        arr_medie = [0,0,0,0,0,0,0]
+        #calcolo le medie
+        for row in num_prenotazioni_per_giorno_settimana:
+            for i in range(0,len(arr_medie)):
+                if cont_giorno_settimana[i] != 0 :
+                    arr_medie[i] = int(row[nome_giorni_della_settimana[i].lower()]) / cont_giorno_settimana[i]
+                else:
+                    arr_medie[i] = 0
+            print(arr_medie)
 
 
 
@@ -116,7 +118,7 @@ def home():
 
     return render_template(
         'home.html',
-        title='Home Page', nome_mesi = mesi, lezioni_al_mese = tab_totale_lezioni_svolte_al_mese, mesi_con_piu_corsi = mesi_con_max_corsi ,num_corsi =  max_corsi, medie = 0 , nome_giorni_della_settimana = nome_giorni_della_settimana
+        title='Home Page', nome_mesi = mesi, lezioni_al_mese = tab_totale_lezioni_svolte_al_mese, mesi_con_piu_corsi = mesi_con_max_corsi ,num_corsi =  max_corsi, medie = arr_medie , nome_giorni_della_settimana = nome_giorni_della_settimana
     )
 
 
@@ -410,6 +412,9 @@ def corsi():
                 
                 input_ora_inizio = request.form['ora_iniziale_ricerca']
                 input_ora_fine = request.form['ora_finale_ricerca']
+                if input_ora_inizio == '' or  input_ora_fine == '':
+                        flash("riempire i campi")
+                        return  render_template( 'corsi.html',title='Corsi Disponibili', data = data, ruolo = ruolo)
 
 
                 if ruolo == 'capo':
@@ -830,7 +835,7 @@ def contaGiorni():
             
     return num_gs
 
-
+#questa funzione forse è da eliminare
 def almeno_una_settimana_nelle_policy():
     with engine.connect() as conn:
         s = text("SELECT * FROM policy_occupazione")
@@ -852,4 +857,6 @@ def palestra_gia_creata():
                 return True
             else:
                 return False
+
+
 
