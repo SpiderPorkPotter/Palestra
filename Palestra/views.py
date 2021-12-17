@@ -25,10 +25,10 @@ RUOLI = ["adminDB", "capo", "istruttore", "iscritto" ]
 mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
 
 
-#psycopg2 è il driver che si usa per comunicare col database
+#psycopg2  il driver che si usa per comunicare col database
 
-DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
-#DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/PalestraSeria"
+#DB_URI = "postgresql+psycopg2://postgres:passwordsupersegreta@localhost:5432/Palestra"
+DB_URI = "postgresql+psycopg2://postgres:a@localhost:5432/PalestraSeria"
 engine = create_engine(DB_URI)
 
 
