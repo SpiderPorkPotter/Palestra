@@ -16,53 +16,33 @@
     <div class="row">
         <div class="col-sm-3 col-md-3">
             <div class="well">
-                <h2 class="text-muted">Sollevamento polemiche</h2>
-                <p><span class="label label-default">IL PI&Uacute; SCELTO</span></p>
-                <ul>
-                    <li>10 lezioni</li>
-                    <li>Orario: 9-12 / 15-18</li>
-                    <li>Istruttore: Bepi</li>
-                </ul>
-                <h3>Descrizione</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta.</p>
-                <hr>
-                <p><a class="btn btn-default btn-lg" href="#"><i class="icon-ok"></i>Iscriviti</a></p>
-            </div>
-        </div>
-
-        <div class="col-sm-3 col-md-3">
-            <div class="well">
-                <h2 class="text-warning">Yoga Acrobatico</h2>
-                <p><span class="label label-success">PRO</span></p>
-                <ul>
-                    <li>5 lezioni</li>
-                    <li>Orario: 15-18</li>
-                    <li>Istruttore: Toni</li>
-                </ul>
-                <h3>Descrizione</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta.</p>
-                <hr>
-                <p><a class="btn btn-default btn-lg" href="#"><i class="icon-ok"></i>Iscriviti</a></p>
-            </div>
-        </div>
-
-        <div class="col-sm-3 col-md-3">
-            <div class="well">
                 <h2 class="text-info">Free Trainig</h2>
-                <p><span class="label label-info">BASE</span></p>
-                <ul>
-                    <li>Allenamento libero</li>
-                    <li>Orario: tutto il giorno</li>
-                </ul>
-                <h3>Descrizione</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta.</p>
+                <p><span class="label label-info">Allenamento libero</span></p>
+            
+                <h4>Descrizione</h4>
+                <p>Le sale pesi offrono allenamento libero per tutte le età con molti attrezzi super.</p>
                 <hr>
-                <p><a class="btn btn-default btn-lg" href="#"><i class="icon-ok"></i>Prenotati</a></p>
+                
             </div>
         </div>
+        {% for row in lista_tipologie_corsi %}
+            <div class="col-sm-3 col-md-3">
+                <div class="well">
+                    <h2 class="text-info">{{ row['nome_tipologia'] }} </h2>
+                    
+                    <h4>Descrizione</h4>
+                    <p>{{ row['descrizione'] }}</p>
+                    <hr>
+                    
+                </div>
+            </div>
+        {% endfor  %}
+
+
+        
     </div> 
 </div>
-
+<h2> Statistiche  </h2>
 <table class="table">
     <tr><th>Mese</th><th>Numero Corsi</th></tr>
     {% for row in lezioni_al_mese %}

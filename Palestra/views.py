@@ -77,6 +77,8 @@ def home():
     with engine.connect() as conn:
         
         totale_lezioni_svolte_al_mese = text("SELECT COUNT(*) AS numcorsi, CAST(date_part('month',data)as int) AS meseint  FROM sale_corsi  GROUP BY date_part('month',data) ")
+        tipologie_corsi_query = text("SELECT distinct (nome_tipologia), descrizione FROM tipologie_corsi ")
+        lista_tipologie_corsi = conn.execute(tipologie_corsi_query)
         
         #creo delle copie ed agisco su di esse xk il cursore scarica la tabella
         tab_totale_lezioni_svolte_al_mese = conn.execute(totale_lezioni_svolte_al_mese)
@@ -110,13 +112,9 @@ def home():
                     arr_medie[i] = 0
             print(arr_medie)
 
-
-
-#PRIMA medie = arr_medie, per testare l'ho messo a medie = 0. Così all'inizio non mi rompeva le scatole
-
     return render_template(
         'home.html',
-        title='Home Page', nome_mesi = mesi, lezioni_al_mese = tab_totale_lezioni_svolte_al_mese, mesi_con_piu_corsi = mesi_con_max_corsi ,num_corsi =  max_corsi, medie = arr_medie , nome_giorni_della_settimana = nome_giorni_della_settimana
+        title='Home Page', nome_mesi = mesi, lezioni_al_mese = tab_totale_lezioni_svolte_al_mese, mesi_con_piu_corsi = mesi_con_max_corsi ,num_corsi =  max_corsi, medie = arr_medie , nome_giorni_della_settimana = nome_giorni_della_settimana, lista_tipologie_corsi = lista_tipologie_corsi
     )
 
 
