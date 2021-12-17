@@ -59,7 +59,6 @@
                     <!-- se l'utente is CAPO-->
                     {% elif current_user.get_role()== 1 %}
                     <li><a href="{{ url_for('profilo') }}">Profilo</a></li>
-                    <li><a href="{{ url_for('istruttori') }}">Istruttori</a></li>
                     <li><a href="{{ url_for('policy_occupazione') }}">Policy</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
                     <!-- se l'utente is ISTRUTTORE-->
