@@ -10,7 +10,7 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 from flask_wtf import FlaskForm, form
 from sqlalchemy.sql.elements import Null
 from sqlalchemy.sql.expression import null, text
-from wtforms import StringField, PasswordField, IntegerField, FormField, RadioField
+from wtforms import StringField, PasswordField, IntegerField, FormField, RadioField, validators
 from wtforms.validators import InputRequired, Email, Length, Optional
 from sqlalchemy import create_engine
 from Palestra import app
@@ -55,16 +55,16 @@ class LoginForm(FlaskForm):
 
 #stessa cosa di quello sopra, ma per la registrazione
 class RegistrazioneForm(FlaskForm):
-    codice_fiscale = StringField('Codice fiscale', validators = [InputRequired(), Length(min = 11, max = 16)])
+    codice_fiscale = StringField('Codice fiscale', validators = [InputRequired(), Length(min = 2, max = 50)])
     nome = StringField('Nome', validators = [InputRequired(), Length(min = 3, max = 50)])
     cognome = StringField('Cognome', validators = [InputRequired(), Length(min = 3, max = 50)])
     #la data dell'iscrizione la prendiamo al momento della registrazione    
     email = StringField('Email', validators = [InputRequired(), Email(message = 'Email non valida'), Length(max = 50)])
-    password = PasswordField('Password', validators = [InputRequired(), Length(min = 8, max = 50)])
+    password = PasswordField('Password', validators = [InputRequired(), Length(min = 1, max = 50)])
     #mettiamo il conferma password? Boh, intanto c'è, poi al massimo lo eliminiamo
     #chk_password = PasswordField('conferma password', validators = [InputRequired(), Length(min = 8, max = 50)])
     #le opzioni di contatto 
-    telefono = StringField('Telefono', validators = [InputRequired(), Length(min = 9, max = 11)])
+    telefono = StringField('Telefono', validators = [InputRequired(), Length(max=11)])
     residenza = StringField('Luogo di residenza', validators = [InputRequired()])
     citta = StringField('Città di residenza', validators = [InputRequired()])
 
@@ -208,8 +208,9 @@ def registrazione():
     return render_template('registrazione.html', title = 'registrazione', form = form)
 
 
-@login_required
+
 @app.route('/profilo', methods = ['POST','GET'])
+@login_required
 def profilo():
     flash("Ecco il tuo profilo!")
     #prendo l'id dell'utente corrente e le sue info
@@ -342,13 +343,15 @@ def profilo():
    
 
 
-@login_required
+
 @app.route('/logout')
+@login_required
 def logout():
     #elimina dalla sessione l'utente attuale
     logout_user()
     return redirect('/home')
 
+@login_required
 @app.route('/corsi', methods = ['POST', 'GET'])
 def corsi():
     
@@ -491,8 +494,8 @@ def corsi():
     else: 
         return redirect(url_for("home"))
 
-
 @app.route('/istruttori')
+@login_required
 def istruttori():
     with engine.connect() as conn:
         q = text("SELECT p.nome,p.cognome,i.telefono  FROM persone p  JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=2")
@@ -502,6 +505,7 @@ def istruttori():
 
 
 @app.route('/creazionePalestra',methods=['POST', 'GET'])
+@login_required
 def creazionePalestra():
     tipologie_presenti = []
     """pagina della creazione della palestra"""
@@ -564,6 +568,7 @@ def creazionePalestra():
 
 
 @app.route('/calendario', methods=['POST', 'GET'])
+@login_required
 def calendario():
     #calendario
     if current_user != None:
@@ -605,6 +610,7 @@ def calendario():
 
 
 @app.route('/admin', methods=['POST', 'GET'])
+@login_required
 def admin():
     if request.method == 'POST':
         nome = request.form['nome']
@@ -653,6 +659,7 @@ class CreaSalaForm(FlaskForm):
 
 
 @app.route('/crea_sala', methods=['POST', 'GET'])
+@login_required
 def crea_sala():
    
     if  "Submit" not in request.form :
@@ -679,7 +686,9 @@ def crea_sala():
 
     return render_template("creazioneSala.html", title = "Crea una nuova sala nella tua palestra", form = form, id_sala = id_next_sala)
 
+
 @app.route('/policy_occupazione', methods=['POST', 'GET'])
+@login_required
 def policy_occupazione():
 
 
@@ -738,6 +747,7 @@ def policy_occupazione():
 
 
 @app.route('/corsi/lista',  methods=['POST', 'GET'])
+@login_required
 def lista_corsi():
 
     #----------------------------------------------------DA FAREEEEE
