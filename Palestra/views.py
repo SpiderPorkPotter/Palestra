@@ -243,7 +243,19 @@ def profilo():
         print(ruolo)
         
         if ruolo == "istruttore" or ruolo == "iscritto": #se è istruttore o iscritto
- 
+            #in caso da cancellare sta parte
+            if "autodistruzione" in request.form and request.form['autodistruzione'] == "Elimina profilo":
+
+                if ruolo == "iscritto": 
+                    elimina_prenotazioni = text("DELETE FROM prenotazioni WHERE codice_fiscale = :cf");
+                    elimina_info_contatti = text("DELETE FROM info_contatti WHERE codice_fiscale = :cf")
+                    elimina_persona = text("DELETE FROM persone WHERE codice_fiscale = :cf")
+                    with engine_iscritto.connect().execution_options(isolation_level="SERIALIZABLE") as conn:
+                        conn.execute(elimina_prenotazioni, cf=id)
+                        conn.execute(elimina_info_contatti, cf=id)
+                        conn.execute(elimina_persona, cf=id)
+                return render_template("home.html")
+
             if "prenotaCorso" in request.form and request.form['prenotaCorso'] == "Prenotati":
                 data_prenotata=request.form['dataPrenotata'].replace(" ", "-")
                 id_sala=request.form['idSala']
@@ -331,11 +343,11 @@ def profilo():
                     tab_corsi_creati = conn.execute(q_corsi_creati,id_utente=id)
 
                 
-            if ruolo == "istruttore": # istruttore       
+            if ruolo == "istruttore":     
                 return render_template("profilo.html",title="profilo", dati_utente = dati_utente_corrente, ruolo=ruolo, prenotazioni_effettuate=tab_prenotazioni_effettuate, tab_corsi_creati = tab_corsi_creati)
             if ruolo == "iscritto":
                 return render_template("profilo.html",title="profilo", dati_utente = dati_utente_corrente, ruolo=ruolo, prenotazioni_effettuate=tab_prenotazioni_effettuate)
-        if ruolo == "capo": # se è il capo
+        if ruolo == "capo": 
             if palestra_gia_creata() == True:
                 mostra_link_creazione_palestra = "False";
             else:

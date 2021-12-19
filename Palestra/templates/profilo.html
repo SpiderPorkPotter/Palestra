@@ -199,5 +199,12 @@
             {% endif %}
     {% endif %}
 
+{% if  ruolo == 'iscritto' %}
+<form action="/profilo" method="post">
+    
+    <input type="submit" class="btn" name="autodistruzione" value="Elimina Profilo">
+</form>
+</form>
+{% endif %}
 
     {% endblock %}
