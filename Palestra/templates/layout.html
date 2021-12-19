@@ -41,14 +41,7 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('home') }}">Home</a></li>
-                    <!-- se l'utente si è autenticato, le pagine qui sotto non le può vedere
-
-        LOGIN -> home, profilo, corsi, calendario, ?istruttori?, logout
-        NO LOGIN -> home, login, registrazione, corsi, logout
-
-        temporanea, per vedere se effettivamente è loggato, poi
-        stabiliamo meglio quali si vedono e quali no
-    -->
+          
                     <!-- se l'utente is autenticato-->
                     {% if current_user.is_authenticated %}
 

@@ -54,6 +54,7 @@
     <Content Include="Palestra\templates\home.html" />
     <Content Include="Palestra\templates\istruttori.html" />
     <Content Include="Palestra\templates\lista_corsi.html" />
+    <Content Include="Palestra\templates\lista_prenotazioni.html" />
     <Content Include="Palestra\templates\login.html" />
     <Content Include="Palestra\templates\policyOccupazione.html" />
     <Content Include="Palestra\templates\profilo.html" />
