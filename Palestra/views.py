@@ -19,16 +19,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 import re
 import numpy
-#importa va variabile per il database dal file __init__.py
-from .__init__ import DB_URI
+#importa le URI per il database dal file __init__.py
+from .__init__ import DB_URI, DB_URI_ISCRITTO, DB_URI_CAPO , DB_URI_ADMIN , DB_URI_ISTRUTTORE
+
 #costanti utili
 nome_giorni_della_settimana=["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"]
 RUOLI = ["adminDB", "capo", "istruttore", "iscritto" ]
 mesi=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"]
 
-
+#definizione delle varie engine le quali servono per eseguire le connessioni al db nel momento oppurtuno
 engine = create_engine(DB_URI)
-
+engine_iscritto = create_engine(DB_URI_ISCRITTO)
+engine_capo = create_engine(DB_URI_CAPO)
+engine_istruttore = create_engine(DB_URI_ISTRUTTORE)
+engine_admin = create_engine(DB_URI_ADMIN)
 
 #inizializza la libreria che gestisce i login
 login_manager = LoginManager()
@@ -40,7 +44,19 @@ login_manager.login_view = 'login'
 #segue l'esempio che c'è qui: https://flask-login.readthedocs.io/en/latest/#your-user-class
 @login_manager.user_loader
 def user_loader(id_utente):
-    return Persone.query.filter_by(codice_fiscale = id_utente).first()
+    
+    with  engine.connect().execution_options(isolation_level="READ UNCOMMITTED") as conn:
+        conn.begin()
+        try :
+            return  Persone.query.filter_by(codice_fiscale = id_utente).first()
+        except:
+            flash("Errore")
+            return null
+        finally:
+            conn.close()
+            
+           
+    
 
 
 #classe di wtforms che contiene il form di login
@@ -73,8 +89,8 @@ class RegistrazioneForm(FlaskForm):
 @app.route('/home')
 def home():
     
-    #TODO:DA FAREEEEEEEEEEEEEEEEEEEEE
-    with engine.connect() as conn:
+    
+    with engine_iscritto.connect() as conn:
         
         totale_lezioni_svolte_al_mese = text("SELECT COUNT(*) AS numcorsi, CAST(date_part('month',data)as int) AS meseint  FROM sale_corsi  GROUP BY date_part('month',data) ")
         tipologie_corsi_query = text("SELECT distinct (nome_tipologia), descrizione FROM tipologie_corsi ")
@@ -96,22 +112,24 @@ def home():
 
 
         #affluenza media x ogni giorno della settimana
-        #if almeno_una_settimana_nelle_policy():
-            
         cont_giorno_settimana  = contaGiorni()
-        print(cont_giorno_settimana)
         s = text("SELECT * FROM vista_prenotazioni_settimana")
         num_prenotazioni_per_giorno_settimana = conn.execute(s)
         arr_medie = [0,0,0,0,0,0,0]
+
         #calcolo le medie
         for row in num_prenotazioni_per_giorno_settimana:
             for i in range(0,len(arr_medie)):
-                if cont_giorno_settimana[i] != 0 :
-                    arr_medie[i] = int(row[nome_giorni_della_settimana[i].lower()]) / cont_giorno_settimana[i]
+                if cont_giorno_settimana[i] != 0 and row[nome_giorni_della_settimana[i].lower()] is not None  :
+                    arr_medie[i] = int(row[nome_giorni_della_settimana[i].lower()]) / int(cont_giorno_settimana[i])
                 else:
                     arr_medie[i] = 0
+            print("medie calcolate :")        
             print(arr_medie)
+    
 
+        
+        
     return render_template(
         'home.html',
         title='Home Page', nome_mesi = mesi, lezioni_al_mese = tab_totale_lezioni_svolte_al_mese, mesi_con_piu_corsi = mesi_con_max_corsi ,num_corsi =  max_corsi, medie = arr_medie , nome_giorni_della_settimana = nome_giorni_della_settimana, lista_tipologie_corsi = lista_tipologie_corsi
@@ -166,7 +184,7 @@ def registrazione():
         citt = form.citta.data
 
         persona_gia_presente = False
-        with engine.connect() as conn:
+        with engine_iscritto.connect() as conn:
             lista_persone =  conn.execute(text("SELECT codice_fiscale FROM persone " ))
         for row in lista_persone:
             if row['codice_fiscale'] == codiceFisc and persona_gia_presente == False:
@@ -234,7 +252,7 @@ def profilo():
             #inserisco il posto x il corso
                 try:
                     q_insert_posto = text("INSERT INTO prenotazioni(data,codice_fiscale,id_sala,id_fascia, codice_prenotazione) VALUES(:d,:cf,:ids,:idf, :cod_prenotazione) ")
-                    with engine.connect() as conn:
+                    with engine_iscritto.connect() as conn:
                         conn.execute(q_insert_posto,d=data_prenotata, cf=cf_utente, ids=id_sala, idf=id_fascia, cod_prenotazione = creaIDprenotazione())
                         
                 except:
@@ -248,7 +266,7 @@ def profilo():
                 #inserisco il posto x la sala pessi
                 try:
                     q_insert_posto = text("INSERT INTO prenotazioni(data,codice_fiscale,id_sala,id_fascia, codice_prenotazione) VALUES(:d,:cf,:ids,:idf, :cod_prenotazione) ")
-                    with engine.connect() as conn:
+                    with engine_istruttore.connect() as conn:
                         conn.execute(q_insert_posto,d=data_prenotata, cf=cf_utente, ids=id_sala, idf=id_fascia, cod_prenotazione = creaIDprenotazione())
                         
                 except:
@@ -264,7 +282,7 @@ def profilo():
                     #q_cancellazione = text("DELETE FROM prenotazioni WHERE codice_prenotazione=:c ")
                     #q_disabilita/elimina la prenotazione CON VALORE 3 perchè la ha eliminata un iscritto
                     q_disabilita = text("UPDATE prenotazioni SET eliminata = 3 WHERE codice_prenotazione=:c ")
-                    with engine.connect() as conn:
+                    with engine_iscritto.connect() as conn:
                         conn.execute(q_disabilita, c=request.form['id_prenotazione_key'])
                         
             except:
@@ -278,7 +296,7 @@ def profilo():
                     dataCorso = request.form['dataCorso'] 
                     id_fascia = request.form['id_fascia']
                     id_sala = request.form['id_sala']
-                    with engine.connect() as conn:
+                    with engine_istruttore.connect() as conn:
                         
                         #s = text("DELETE FROM prenotazioni WHERE data = :data AND id_sala = :ids AND id_fascia = :idf")
                         s = text("UPDATE prenotazioni SET eliminata = 2 WHERE data = :data AND id_sala = :ids AND id_fascia = :idf ")
@@ -295,7 +313,7 @@ def profilo():
                                     "CASE WHEN s.solo_attrezzi is TRUE  THEN 'Pesi' "
                                         "WHEN s.solo_attrezzi is FALSE  THEN 'Corso' END tipo_sala "
                                     "FROM prenotazioni p JOIN sale s ON p.id_sala = s.id_sala JOIN fascia_oraria fs  ON p.id_fascia=fs.id_fascia  WHERE p.codice_fiscale=:id_utente AND p.eliminata IS NULL" )
-            with engine.connect() as conn:
+            with engine_iscritto.connect() as conn:
                 tab_prenotazioni_effettuate = conn.execute(q_lista_prenotazioni,id_utente=id)
 
             if ruolo == "istruttore": # istruttore            
@@ -304,7 +322,7 @@ def profilo():
                 " FROM corsi c JOIN sale_corsi sc ON sc.id_corso=c.id_corso JOIN fascia_oraria f ON sc.id_fascia= f.id_fascia JOIN tipologie_corsi tc ON c.id_tipologia = tc.id_tipologia " 
                 "  WHERE c.codice_fiscale_istruttore = :id_utente "
                 " ORDER BY sc.data, f.inizio ASC")
-                with engine.connect() as conn:
+                with engine_istruttore.connect() as conn:
                     tab_corsi_creati = conn.execute(q_corsi_creati,id_utente=id)
 
                 
@@ -324,7 +342,7 @@ def profilo():
                 nome_radio_button = cf_passato + "_radio"
                 v = request.form[nome_radio_button]
                 print(v)
-                with engine.connect() as conn:
+                with engine_capo.connect() as conn:
                     if v == "istruttore":
                         s = text("UPDATE persone SET ruolo = 2 WHERE codice_fiscale = :cf AND ruolo <> '2'")
                         conn.execute(s,cf=cf_passato)
@@ -333,10 +351,10 @@ def profilo():
                         conn.execute(s,cf=cf_passato)
             
 
-            with engine.connect() as conn:
+            with engine_capo.connect() as conn:
                 s = text("SELECT p.codice_fiscale, p.nome, p.cognome, i.telefono , p.ruolo FROM  persone p JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo='3' OR p.ruolo='2' ORDER BY p.ruolo ")
                 lista_persone = conn.execute(s)
-                  
+
             return render_template("profilo.html", title="profilo", lista_persone = lista_persone, dati_utente = dati_utente_corrente, ruolo=ruolo, mostra_link_creazione_palestra = mostra_link_creazione_palestra )
     else :
         return render_template("registrazione.html", title="registrazione")
@@ -389,7 +407,7 @@ def corsi():
                             id_sala = idfascia_e_id_sala[1].split('_')[1]
                             print(id_fascia )
                             print(id_sala )
-                            with engine.connect() as conn :
+                            with engine_istruttore.connect() as conn :
                                 prep_query2 = text("INSERT INTO corsi( id_corso, nome_corso, codice_fiscale_istruttore , id_tipologia) VALUES( :idc , :nc ,:cfi, :idt)")
                                 conn.execute(prep_query2, idc = nuovo_id_corso , nc=nome_corso , cfi= id_utente, idt=id_tipologia_corso )
                                 prep_query = text("INSERT INTO sale_corsi(id_sala, id_corso, data, id_fascia) VALUES(:ids , :idc , :d , :idf)")
@@ -419,7 +437,7 @@ def corsi():
 
 
                 if ruolo == 'capo':
-                    with engine.connect() as conn:
+                    with engine_capo.connect() as conn:
                         s = text("SELECT pr.id_sala , f.inizio, f.fine , pr.codice_fiscale , p.nome , p.cognome, i.telefono "
                                 "FROM prenotazioni pr JOIN fascia_oraria f ON (f.id_fascia = pr.id_fascia) JOIN persone p ON (p.codice_fiscale = pr.codice_fiscale) JOIN info_contatti i ON (i.codice_fiscale = pr.codice_fiscale) " 
                                 "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND pr.data = :input_data "
@@ -430,7 +448,7 @@ def corsi():
 
                 if ruolo == "iscritto" or ruolo == "istruttore" : #ricerca corsi disponibili
                     
-                    with engine.connect() as conn:
+                    with engine_iscritto.connect() as conn:
                         q_lista_tipologie = text("SELECT id_tipologia, nome_tipologia FROM tipologie_corsi ")
                         lista_tipologie_tab = conn.execute(q_lista_tipologie)
                         
@@ -464,7 +482,7 @@ def corsi():
 							)
 
                     try:
-                        with engine.connect() as conn:
+                        with engine_iscritto.connect() as conn:
                             corsi_liberi = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB, cf= id_utente )
                             sale_pesi_libere = conn.execute(q_sale_pesi_libere, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB,cf= id_utente )
                     except:
@@ -482,7 +500,7 @@ def corsi():
                         "ORDER BY f1.id_fascia "
                     )
                     try:
-                        with engine.connect() as conn:
+                        with engine_istruttore.connect() as conn:
                             sale_disp_con_fasce = conn.execute(q_sale_libere, dataDB=data_for_DB, oraInizio = input_ora_inizio, oraFine = input_ora_fine , g= intGiorno_settimana)
                     except: 
                         raise
@@ -497,7 +515,7 @@ def corsi():
 @app.route('/istruttori')
 @login_required
 def istruttori():
-    with engine.connect() as conn:
+    with engine_istruttore.connect() as conn:
         q = text("SELECT p.nome,p.cognome,i.telefono  FROM persone p  JOIN info_contatti i ON p.codice_fiscale=i.codice_fiscale WHERE p.ruolo=2")
         lista_istruttori = conn.execute(q)
     
@@ -513,7 +531,7 @@ def creazionePalestra():
         nome_tipo = request.form['nomeTipologiaCorso']
         descrizione = request.form['descrizioneTipologiaCorso']
         #tipologie gia inserite
-        with engine.connect() as conn:
+        with engine_capo.connect() as conn:
             res = conn.execute(" SELECT nome_tipologia FROM tipologie_corsi")
             tipologie_presenti = []
             for row in res:
@@ -548,19 +566,19 @@ def creazionePalestra():
                 print(ora_inizio)
                 print(ora_fine)
                 
-                with engine.connect() as conn:    
+                with engine_capo.connect() as conn:    
                     s = text("INSERT INTO Fascia_oraria(id_fascia, giorno, inizio, fine) VALUES (:id, :g, :ora_i, :ora_f)" )
                     conn.execute(s,id=i, g =intGiorno, ora_i=ora_inizio, ora_f= ora_fine )
         
     #mostrare le fasce gia aggiunte:
-    with engine.connect() as conn:    
+    with engine_capo.connect() as conn:    
             s = text("SELECT * FROM Fascia_oraria ORDER BY id_fascia, giorno " )
             tab_fasce = conn.execute(s)
     
     #mostrare le tipologie di corsi già aggiunte (per agevolare l'inserimento)
     #in teoria ne hai una già fatta, ma non capivo dove mostrasse i dati, quindi l'ho aggiunta
     #sull'html. In caso rimuoviamo la mia
-    with engine.connect() as conn:    
+    with engine_capo.connect() as conn:    
             s = text("SELECT nome_tipologia FROM tipologie_corsi" )
             el_tipologie = conn.execute(s)
             
@@ -630,7 +648,7 @@ def admin():
         #else:
             #inserisco i dati
         try:
-            with engine.connect() as conn:
+            with engine_admin.connect() as conn:
                 s = text("INSERT INTO persone(codice_fiscale,nome,cognome,email,data_iscrizione,password,citta,residenza ,ruolo) VALUES (:codice_fiscale, :nome, :cognome, :email, :data_iscrizione, :password,:citta,:res,1)")
                 conn.execute(s,codice_fiscale=cf, nome=nome, cognome=cognome,email=email, data_iscrizione = datetime.today(),password=generate_password_hash(pwd, method = 'sha256', salt_length = 8),citta=citta,res=residenza)
 
@@ -696,7 +714,7 @@ def policy_occupazione():
     if "confermaModifica" in request.form and "dataInizioModificata" in request.form and "dataFineModificata" in request.form and "percModificata" in request.form and "id_policy" in request.form:
 
 
-        with engine.connect() as conn:
+        with engine_capo.connect() as conn:
             s = text("UPDATE policy_occupazione SET data_inizio=:inizio , data_fine = :fine , percentuale_occupabilità = :perc WHERE id_policy=:id")
             conn.execute(s, inizio=request.form['dataInizioModificata'],fine=request.form['dataFineModificata'], perc = request.form['percModificata'], id=request.form['id_policy']  )
             
@@ -708,7 +726,7 @@ def policy_occupazione():
         input_data_fine = request.form['dpcm-end']
         perc = request.form['perc']
 
-        with engine.connect() as conn:
+        with engine_capo.connect() as conn:
             s = text("SELECT id_policy "
                     "FROM policy_occupazione p "
                     "WHERE p.id_policy in (	SELECT p2.id_policy "
@@ -734,13 +752,13 @@ def policy_occupazione():
             flash(errore)
         else:    
             inserimento_policy = text("INSERT INTO policy_occupazione(data_inizio,data_fine, percentuale_occupabilità) VALUES(:i , :f, :p) ")
-            with engine.connect() as conn:
+            with engine_capo.connect() as conn:
                 conn.execute(inserimento_policy, i=input_data_inizio, f=input_data_fine, p=perc)
                 flash("inserimento riuscito")
 
     #stampa tutte le policy
     tutte_le_policy = text("SELECT * FROM policy_occupazione ")
-    with engine.connect() as conn:
+    with engine_capo.connect() as conn:
         policies = conn.execute(tutte_le_policy)
 
     return render_template("policyOccupazione.html", title = "Occupazione", policies  = policies )
@@ -751,12 +769,13 @@ def policy_occupazione():
 def lista_corsi():
 
     #----------------------------------------------------DA FAREEEEE
-    s = text("SELECT distinct c.nome_corso,  p.nome, p.cognome,t.nome_tipologia, t.descrizione , i.telefono FROM corsi c JOIN persone p ON (p.codice_fiscale = c.codice_fiscale_istruttore AND p.ruolo = 2) " 
+    s = text("SELECT distinct c.nome_corso,  p.nome, p.cognome,t.nome_tipologia, t.descrizione , i.telefono "
+            "FROM corsi c JOIN persone p ON (p.codice_fiscale = c.codice_fiscale_istruttore AND p.ruolo = 2) " 
             "JOIN tipologie_corsi t ON  t.id_tipologia = c.id_tipologia "
             "JOIN info_contatti i ON c.codice_fiscale_istruttore = i.codice_fiscale "
             "GROUP BY c.nome_corso, c.codice_fiscale_istruttore , p.nome, p.cognome ,t.nome_tipologia, t.descrizione,  i.telefono ;"
             )
-    with engine.connect() as conn:
+    with engine_iscritto.connect() as conn:
         tab_lista_corsi = conn.execute(s)
 
 
@@ -767,7 +786,7 @@ def lista_corsi():
 #-------------------UTILI--------------
 
 def creaIDsala():
-    with engine.connect() as conn:
+    with engine_iscritto.connect() as conn:
         s = "SELECT COUNT(id_sala) AS num_sala FROM SALE "
         res = conn.execute(s)
         for row in res:
@@ -789,7 +808,7 @@ def data_to_giorno_settimana(dataString):
 
 
 def creaIDcorso():
-     with engine.connect() as conn:
+     with engine_iscritto.connect() as conn:
         s = "SELECT COUNT(id_corso) AS num_corso FROM corsi "
         res = conn.execute(s)
         for row in res:
@@ -801,7 +820,7 @@ def creaIDcorso():
 
 
 def creaIDtipologiaCorso():
-     with engine.connect() as conn:
+     with engine_capo.connect() as conn:
         s = "SELECT COUNT(*) AS num_tipologie FROM tipologie_corsi "
         res = conn.execute(s)
         for row in res:
@@ -812,7 +831,7 @@ def creaIDtipologiaCorso():
         return next_id
 
 def creaIDprenotazione():
-     with engine.connect() as conn:
+     with engine_iscritto.connect() as conn:
         s = "SELECT COUNT(*) AS num_prenotazioni FROM prenotazioni"
         res = conn.execute(s)
         for row in res:
@@ -826,38 +845,30 @@ def creaIDprenotazione():
 def contaGiorni():
     num_gs = [0,0,0,0,0,0,0]
 
-    with engine.connect() as conn:
-        s = text("SELECT data_inizio,data_fine FROM policy_occupazione WHERE percentuale_occupabilità <> 0 ")    
-        lista_range_date = conn.execute(s)
-
-    for row in lista_range_date:
-        #sono di tipo datetime.date
-        data_inizio=datetime.strptime(str(row['data_inizio']),"%Y-%m-%d")
-        data_fine = datetime.strptime(str(row['data_fine']),"%Y-%m-%d" )
-        data_corrente = datetime.today()
+    with engine_iscritto.connect() as conn: 
+        
+        #la data piu vechia (circa la creazione della palestra è la data di iscrizione del capo piu vecchia)
+        query_data_piu_vecchia = text("SELECT data_iscrizione as data_creazione FROM persone WHERE ruolo = 1 ORDER BY data_iscrizione ASC limit 1")
+        tab_data_vecchia = conn.execute(query_data_piu_vecchia)
        
-        while data_inizio != data_fine and data_inizio < data_corrente:
-            gs = data_inizio.weekday()
-            num_gs[gs] = num_gs[gs] + 1 
-            data_inizio = data_inizio + timedelta(days=1)
+
+    for row in tab_data_vecchia:
+        data_piu_vecchia = row['data_creazione']
+    
+    #sono di tipo datetime.date
+    data_corrente = date.today()
+    
+    while  data_piu_vecchia < data_corrente:
+        gs = data_piu_vecchia.weekday()
+        num_gs[gs] = num_gs[gs] + 1 
+        data_piu_vecchia = data_piu_vecchia + timedelta(days=1)
+    
             
     return num_gs
 
-#questa funzione forse è da eliminare
-def almeno_una_settimana_nelle_policy():
-    with engine.connect() as conn:
-        s = text("SELECT * FROM policy_occupazione")
-        tab = conn.execute(s)
-        n = 0
-    for row in tab:
-        delta = row['data_fine'] - row['data_inizio']
-        n = n + delta.days
-
-    return n >= 7
-
 
 def palestra_gia_creata():
-    with engine.connect() as conn:
+    with engine_capo.connect() as conn:
         s = text("SELECT COUNT(*) as num_fasce FROM fascia_oraria")
         tab = conn.execute(s)
         for row in tab:
@@ -868,3 +879,36 @@ def palestra_gia_creata():
 
 
 
+@app.route('/lista_prenotazioni', methods=['POST', 'GET'])
+@login_required
+def lista_prenotazioni():
+    if current_user != None:
+        ruolo = Persone.get_role(current_user)
+        
+        query_lista_prenotazioni_sale_pesi = text("SELECT pr.data, pr.codice_fiscale, pr.codice_prenotazione , pr.id_sala, pe.nome , pe.cognome , pe.email , f.inizio, f.fine , i.telefono "
+                "FROM prenotazioni pr JOIN persone pe ON pr.codice_fiscale = pe.codice_fiscale "
+                "JOIN info_contatti i ON i.codice_fiscale = pr.codice_fiscale "
+                "JOIN fascia_oraria f ON f.id_fascia = pr.id_fascia "
+                "JOIN sale s ON pr.id_sala = s.id_sala "
+                "WHERE pr.eliminata IS NULL ORDER BY pr.data "
+                )
+        query_lista_prenotazioni_sale_corsi = text("SELECT pr.data, pr.codice_fiscale, pr.codice_prenotazione , pr.id_sala, pe.nome , pe.cognome , pe.email , f.inizio, f.fine , i.telefono , c.nome_corso , t.nome_tipologia "
+                "FROM prenotazioni pr JOIN persone pe ON pr.codice_fiscale = pe.codice_fiscale JOIN info_contatti i ON i.codice_fiscale = pr.codice_fiscale "
+                "JOIN fascia_oraria f ON f.id_fascia = pr.id_fascia "
+                "JOIN sale_corsi s ON pr.id_sala = s.id_sala "
+                "JOIN corsi c ON s.id_corso = c.id_corso "
+                "JOIN tipologie_corsi t ON c.id_tipologia = t.id_tipologia "
+                "WHERE pr.eliminata IS NULL ORDER BY pr.data "
+                ) 
+        query_prenotazioni_eliminate = text("SELECT pr.data, pr.codice_fiscale, pr.codice_prenotazione , pr.id_sala, pe.nome , pe.cognome , pe.email , f.inizio, f.fine, i.telefono "
+                "FROM prenotazioni pr JOIN persone pe ON pr.codice_fiscale = pe.codice_fiscale JOIN info_contatti i ON i.codice_fiscale = pr.codice_fiscale "
+                "JOIN fascia_oraria f ON f.id_fascia = pr.id_fascia "
+                "WHERE pr.eliminata IS NOT NULL ORDER BY pr.data "
+                )
+        with engine_capo.connect() as conn:
+            tab_lista_prenotazioni_sale_pesi = conn.execute(query_lista_prenotazioni_sale_pesi)
+            tab_lista_prenotazioni_eliminate = conn.execute(query_prenotazioni_eliminate)
+            tab_lista_prenotazioni_sale_corsi = conn.execute(query_lista_prenotazioni_sale_corsi)
+        return render_template("lista_prenotazioni.html", tab_lista_prenotazioni_sale_pesi = tab_lista_prenotazioni_sale_pesi , tab_lista_prenotazioni_eliminate = tab_lista_prenotazioni_eliminate, tab_lista_prenotazioni_sale_corsi = tab_lista_prenotazioni_sale_corsi)
+
+    return render_template("lista_prenotazioni.html")

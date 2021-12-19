@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+        <h3> Lista Prenotazioni Sale Pesi </h3>
+        <table class="table">
+
+        <tr>
+            <th scope="col">Codice Prenotazione</th>
+            <th scope="col">Data</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Codice Fiscale</th>
+            <th scope="col">Email</th>
+            <th scope="col">Sala</th>
+            <th scope="col">Inizio</th>
+            <th scope="col">Fine</th>
+            <th scope="col">Telefono</th>
+        </tr>
+        {% for row in tab_lista_prenotazioni_sale_pesi %}
+        <tr>
+            <td>{{ row['codice_prenotazione'] }}</td>
+            <td>{{ row['data'] }}</td>
+            <td>{{ row['cognome'] }} {{ row['nome'] }}</td>
+            <td>{{ row['codice_fiscale'] }}</td>
+            <td>{{ row['email'] }}</td>
+            <td>{{ row['id_sala'] }}</td>
+            <td>{{ row['inizio'] }}</td>
+            <td>{{ row['fine'] }}</td>
+            <td>{{ row['telefono'] }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+
+        <h3> Lista Prenotazioni Sale Corsi </h3>
+        <table class="table">
+
+        <tr>
+            <th scope="col">Codice Prenotazione</th>
+            <th scope="col">Data</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Codice Fiscale</th>
+            <th scope="col">Email</th>
+            <th scope="col">Sala</th>
+            <th scope="col">Inizio</th>
+            <th scope="col">Fine</th>
+            <th scope="col">Telefono</th>
+            <th scope="col">Nome Corso</th>
+            <th scope="col">Tipologia</th>
+        </tr>
+        {% for row in tab_lista_prenotazioni_sale_corsi %}
+        <tr>
+            <td>{{ row['codice_prenotazione'] }}</td>
+            <td>{{ row['data'] }}</td>
+            <td>{{ row['cognome'] }} {{ row['nome'] }}</td>
+            <td>{{ row['codice_fiscale'] }}</td>
+            <td>{{ row['email'] }}</td>
+            <td>{{ row['id_sala'] }}</td>
+            <td>{{ row['inizio'] }}</td>
+            <td>{{ row['fine'] }}</td>
+            <td>{{ row['telefono'] }}</td>
+            <td>{{ row['nome_corso'] }}</td>
+            <td>{{ row['nome_tipologia'] }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+
+
+        <h3> Lista Prenotazioni Cancellate </h3>
+        <table class="table">
+
+        <tr>
+            <th scope="col">Codice Prenotazione</th>
+            <th scope="col">Data</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Codice Fiscale</th>
+            <th scope="col">Email</th>
+            <th scope="col">Sala</th>
+            <th scope="col">Inizio</th>
+            <th scope="col">Fine</th>
+            <th scope="col">Telefono</th>
+        </tr>
+        {% for row in tab_lista_prenotazioni_eliminate %}
+        <tr>
+            <td>{{ row['codice_prenotazione'] }}</td>
+            <td>{{ row['data'] }}</td>
+            <td>{{ row['cognome'] }} {{ row['nome'] }}</td>
+            <td>{{ row['codice_fiscale'] }}</td>
+            <td>{{ row['email'] }}</td>
+            <td>{{ row['id_sala'] }}</td>
+            <td>{{ row['inizio'] }}</td>
+            <td>{{ row['fine'] }}</td>
+            <td>{{ row['telefono'] }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+
+
+
+{% endblock %}
+
+
+
+
+
+
