@@ -243,7 +243,7 @@ def profilo():
         print(ruolo)
         
         if ruolo == "istruttore" or ruolo == "iscritto": #se è istruttore o iscritto
-            #in caso da cancellare sta parte
+            #in caso da cancellare sta parte CANCELLAZIONE DELL'UTENTE
             if "autodistruzione" in request.form and request.form['autodistruzione'] == "Elimina Profilo":
 
                 if ruolo == "iscritto": 
@@ -254,7 +254,9 @@ def profilo():
                         conn.execute(elimina_prenotazioni, cf=id)
                         conn.execute(elimina_info_contatti, cf=id)
                         conn.execute(elimina_persona, cf=id)
-                return render_template("home.html")
+                    
+                    logout_user()
+                return render_template("/home.html")
 
             if "prenotaCorso" in request.form and request.form['prenotaCorso'] == "Prenotati":
                 data_prenotata=request.form['dataPrenotata'].replace(" ", "-")
