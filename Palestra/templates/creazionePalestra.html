@@ -160,29 +160,7 @@
     </div>
 </form>
 
-{% if tab_fasce != Null %}
-<br />
-<br />
-    <h3>Fasce gia inserite :</h3> 
-    <br>
-    <table class="table"> 
-        <tr>
-            <th scope="col">Giorno</th>
-            <th scope="col">Fascia</th>
-            <th scope="col">Dalle</th>
-            <th scope="col">Alle</th>
-        </tr>
-  
-    {% for row in tab_fasce %}
-        <tr>
-            <td> {{ nome_giorni_della_settimana[row['giorno']-1] }} </td> 
-            <td> {{ row['id_fascia']  }} </td>
-            <td> {{ row['inizio'] }}  </td> 
-            <td> {{ row['fine'] }}  </td>
-        </tr>
-    {% endfor  %}
-    </table>
-{% endif %}
+
     <hr />
     <div class="list-group">
         <h4> Elenco tipologie di corsi gi&aacute; inserite :</h4>
