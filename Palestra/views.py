@@ -488,11 +488,11 @@ def corsi():
                             )
                         percentuale = policy_presenti(data_for_DB)
                         
-                        s2 = ("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
+                        s2 = text("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
                         "FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia=f.id_fascia "
                         "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON (pi.codice_fiscale =co.codice_fiscale_istruttore AND co.codice_fiscale_istruttore <> :cf ) JOIN tipologie_corsi tc ON co.id_tipologia=tc.id_tipologia "
                         "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND sc.data = :input_data "
-                        "AND s.posti_totali > (SELECT Count(*) * :percentuale /100 AS numPrenotati " 
+                        "AND s.posti_totali * :percentuale /100 > (SELECT Count(*) AS numPrenotati " 
                                 "FROM prenotazioni pr JOIN sale_corsi sc1 ON (sc1.id_sala=sc.id_sala AND pr.id_sala= sc.id_sala) "
                                 "JOIN fascia_oraria f1 ON f1.id_fascia=f.id_fascia "
                                 "WHERE pr.data = :input_data "
@@ -919,7 +919,7 @@ def palestra_gia_creata():
             else:
                 return False
 def policy_presenti(data):
-    s = text("SELECT COUNT(*) FROM policy_occupazione WHERE data_inizio = :input_data OR :input_data < data_fine  OR :input_data = data_fine")
+    s = text("SELECT percentuale_occupabilità FROM policy_occupazione WHERE data_inizio = :input_data OR :input_data < data_fine  OR :input_data = data_fine")
     with engine_iscritto.connect().execution_options(isolation_level="SERIALIZABLE") as conn:
         res = conn.execute(s, input_data = data)
         for row in res:
@@ -927,7 +927,7 @@ def policy_presenti(data):
             if val is None :
                return False
             else:
-                return  val    
+                return int(val)    
 
 
 
