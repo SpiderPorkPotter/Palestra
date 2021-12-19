@@ -254,7 +254,7 @@ def profilo():
                         conn.execute(elimina_prenotazioni, cf=id)
                         conn.execute(elimina_info_contatti, cf=id)
                         conn.execute(elimina_persona, cf=id)
-                    
+                    flash("profilo cancellato")
                     logout_user()
                 return render_template("/home.html")
 
