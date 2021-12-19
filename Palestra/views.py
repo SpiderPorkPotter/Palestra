@@ -244,7 +244,7 @@ def profilo():
         
         if ruolo == "istruttore" or ruolo == "iscritto": #se è istruttore o iscritto
             #in caso da cancellare sta parte
-            if "autodistruzione" in request.form and request.form['autodistruzione'] == "Elimina profilo":
+            if "autodistruzione" in request.form and request.form['autodistruzione'] == "Elimina Profilo":
 
                 if ruolo == "iscritto": 
                     elimina_prenotazioni = text("DELETE FROM prenotazioni WHERE codice_fiscale = :cf");
