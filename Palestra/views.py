@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin
 from flask_wtf import FlaskForm, form
 from sqlalchemy.sql.elements import Null
-from sqlalchemy.sql.expression import null, text
+from sqlalchemy.sql.expression import false, null, text
 from wtforms import StringField, PasswordField, IntegerField, FormField, RadioField, validators
 from wtforms.validators import InputRequired, Email, Length, Optional
 from sqlalchemy import create_engine
@@ -353,7 +353,7 @@ def profilo():
             if palestra_gia_creata() == True:
                 mostra_link_creazione_palestra = "False";
             else:
-                mostra_link_creazione_palestra_abilitato = "True";
+                mostra_link_creazione_palestra = "True";
 
             #puo fare upgrade da iscritto a istruttore e viceversa
             if 'modificavalori' in request.form and  request.form['modificavalori'] == "ModificaPermessi":
@@ -480,11 +480,28 @@ def corsi():
                             "AND s.posti_totali > (SELECT Count(*)AS numPrenotati " 
                                     "FROM prenotazioni pr JOIN sale_corsi sc1 ON (sc1.id_sala=sc.id_sala AND pr.id_sala= sc.id_sala) "
                                     "JOIN fascia_oraria f1 ON f1.id_fascia=f.id_fascia "
-                                    "WHERE pr.data = :input_data) "
+                                    "WHERE pr.data = :input_data "
+                                    "AND pr.eliminata IS NULL) "
                             
                                     "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data AND codice_fiscale = :cf AND eliminata IS NULL) "
                           
                             )
+                        percentuale = policy_presenti(data_for_DB)
+                        
+                        s2 = ("SELECT sc.id_fascia,f.inizio,f.fine, sc.id_sala,tc.nome_tipologia, pi.nome AS nome_istruttore, pi.cognome AS cognome_istruttore "
+                        "FROM sale_corsi sc JOIN fascia_oraria f ON sc.id_fascia=f.id_fascia "
+                        "JOIN sale s ON sc.id_sala= s.id_sala JOIN corsi co ON co.id_corso=sc.id_corso JOIN persone pi ON (pi.codice_fiscale =co.codice_fiscale_istruttore AND co.codice_fiscale_istruttore <> :cf ) JOIN tipologie_corsi tc ON co.id_tipologia=tc.id_tipologia "
+                        "WHERE f.inizio >= :oraInizio AND f.fine <= :oraFine AND f.giorno = :intGiorno AND sc.data = :input_data "
+                        "AND s.posti_totali > (SELECT Count(*) * :percentuale /100 AS numPrenotati " 
+                                "FROM prenotazioni pr JOIN sale_corsi sc1 ON (sc1.id_sala=sc.id_sala AND pr.id_sala= sc.id_sala) "
+                                "JOIN fascia_oraria f1 ON f1.id_fascia=f.id_fascia "
+                                "WHERE pr.data = :input_data "
+                                "AND pr.eliminata IS NULL) "
+                        
+                                "AND f.id_fascia NOT IN (SELECT id_fascia FROM prenotazioni WHERE data = :input_data AND codice_fiscale = :cf AND eliminata IS NULL) "
+                        
+                        )
+
 
 
                         q_sale_pesi_libere = text(
@@ -504,7 +521,10 @@ def corsi():
 
                     try:
                         with engine_iscritto.connect().execution_options(isolation_level="REPEATABLE READ") as conn:
-                            corsi_liberi = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB, cf= id_utente )
+                            if percentuale is not False:
+                                corsi_liberi = conn.execute(s2, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB, cf= id_utente, percentuale=percentuale )
+                            else :     
+                                corsi_liberi = conn.execute(s, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB, cf= id_utente )
                             sale_pesi_libere = conn.execute(q_sale_pesi_libere, oraInizio=input_ora_inizio , oraFine = input_ora_fine  ,intGiorno = intGiorno_settimana, input_data = data_for_DB,cf= id_utente )
                     except:
                         raise
@@ -898,6 +918,16 @@ def palestra_gia_creata():
                 return True
             else:
                 return False
+def policy_presenti(data):
+    s = text("SELECT COUNT(*) FROM policy_occupazione WHERE data_inizio = :input_data OR :input_data < data_fine  OR :input_data = data_fine")
+    with engine_iscritto.connect().execution_options(isolation_level="SERIALIZABLE") as conn:
+        res = conn.execute(s, input_data = data)
+        for row in res:
+            val = row['percentuale_occupabilità']
+            if val is None :
+               return False
+            else:
+                return  val    
 
 
 
