@@ -243,7 +243,7 @@ def profilo():
         print(ruolo)
         
         if ruolo == "istruttore" or ruolo == "iscritto": #se è istruttore o iscritto
-            #in caso da cancellare sta parte CANCELLAZIONE DELL'UTENTE
+            # CANCELLAZIONE DELL'UTENTE
             if "autodistruzione" in request.form and request.form['autodistruzione'] == "Elimina Profilo":
 
                 if ruolo == "iscritto": 
@@ -305,8 +305,8 @@ def profilo():
             except:
                 raise
 
-            #CANCELLA IL CORSO
-                
+            
+            #CANCELLA IL CORSO    
             if request.method == "POST" and "cancellaCorso" in request.form:
                 try:
                     id_corso = request.form['id_corso_da_cancellare']
@@ -613,9 +613,7 @@ def creazionePalestra():
         
     
     
-    #mostrare le tipologie di corsi già aggiunte (per agevolare l'inserimento)
-    #in teoria ne hai una già fatta, ma non capivo dove mostrasse i dati, quindi l'ho aggiunta
-    #sull'html. In caso rimuoviamo la mia
+    
     with engine_capo.connect().execution_options(isolation_level="REPEATABLE READ") as conn:    
             s = text("SELECT nome_tipologia FROM tipologie_corsi" )
             el_tipologie = conn.execute(s)
@@ -814,7 +812,39 @@ def lista_corsi():
 
     return render_template('lista_corsi.html', tab_lista_corsi = tab_lista_corsi)
 
+@app.route('/lista_prenotazioni', methods=['POST', 'GET'])
+@login_required
+def lista_prenotazioni():
+    if current_user != None:
+        
+        
+        query_lista_prenotazioni_sale_pesi = text("SELECT pr.data, pr.codice_fiscale, pr.codice_prenotazione , pr.id_sala, pe.nome , pe.cognome , pe.email , f.inizio, f.fine , i.telefono "
+                "FROM prenotazioni pr JOIN persone pe ON pr.codice_fiscale = pe.codice_fiscale "
+                "JOIN info_contatti i ON i.codice_fiscale = pr.codice_fiscale "
+                "JOIN fascia_oraria f ON f.id_fascia = pr.id_fascia "
+                "JOIN sale s ON pr.id_sala = s.id_sala "
+                "WHERE pr.eliminata IS NULL ORDER BY pr.data "
+                )
+        query_lista_prenotazioni_sale_corsi = text("SELECT pr.data, pr.codice_fiscale, pr.codice_prenotazione , pr.id_sala, pe.nome , pe.cognome , pe.email , f.inizio, f.fine , i.telefono , c.nome_corso , t.nome_tipologia "
+                "FROM prenotazioni pr JOIN persone pe ON pr.codice_fiscale = pe.codice_fiscale JOIN info_contatti i ON i.codice_fiscale = pr.codice_fiscale "
+                "JOIN fascia_oraria f ON f.id_fascia = pr.id_fascia "
+                "JOIN sale_corsi s ON pr.id_sala = s.id_sala "
+                "JOIN corsi c ON s.id_corso = c.id_corso "
+                "JOIN tipologie_corsi t ON c.id_tipologia = t.id_tipologia "
+                "WHERE pr.eliminata IS NULL ORDER BY pr.data "
+                ) 
+        query_prenotazioni_eliminate = text("SELECT pr.data, pr.codice_fiscale, pr.codice_prenotazione , pr.id_sala, pe.nome , pe.cognome , pe.email , f.inizio, f.fine, i.telefono "
+                "FROM prenotazioni pr JOIN persone pe ON pr.codice_fiscale = pe.codice_fiscale JOIN info_contatti i ON i.codice_fiscale = pr.codice_fiscale "
+                "JOIN fascia_oraria f ON f.id_fascia = pr.id_fascia "
+                "WHERE pr.eliminata IS NOT NULL ORDER BY pr.data "
+                )
+        with engine_capo.connect().execution_options(isolation_level="READ COMMITTED") as conn:
+            tab_lista_prenotazioni_sale_pesi = conn.execute(query_lista_prenotazioni_sale_pesi)
+            tab_lista_prenotazioni_eliminate = conn.execute(query_prenotazioni_eliminate)
+            tab_lista_prenotazioni_sale_corsi = conn.execute(query_lista_prenotazioni_sale_corsi)
+        return render_template("lista_prenotazioni.html", tab_lista_prenotazioni_sale_pesi = tab_lista_prenotazioni_sale_pesi , tab_lista_prenotazioni_eliminate = tab_lista_prenotazioni_eliminate, tab_lista_prenotazioni_sale_corsi = tab_lista_prenotazioni_sale_corsi)
 
+    return render_template("lista_prenotazioni.html")
 
 #-------------------UTILI--------------
 
@@ -931,36 +961,4 @@ def policy_presenti(data):
 
 
 
-@app.route('/lista_prenotazioni', methods=['POST', 'GET'])
-@login_required
-def lista_prenotazioni():
-    if current_user != None:
-        
-        
-        query_lista_prenotazioni_sale_pesi = text("SELECT pr.data, pr.codice_fiscale, pr.codice_prenotazione , pr.id_sala, pe.nome , pe.cognome , pe.email , f.inizio, f.fine , i.telefono "
-                "FROM prenotazioni pr JOIN persone pe ON pr.codice_fiscale = pe.codice_fiscale "
-                "JOIN info_contatti i ON i.codice_fiscale = pr.codice_fiscale "
-                "JOIN fascia_oraria f ON f.id_fascia = pr.id_fascia "
-                "JOIN sale s ON pr.id_sala = s.id_sala "
-                "WHERE pr.eliminata IS NULL ORDER BY pr.data "
-                )
-        query_lista_prenotazioni_sale_corsi = text("SELECT pr.data, pr.codice_fiscale, pr.codice_prenotazione , pr.id_sala, pe.nome , pe.cognome , pe.email , f.inizio, f.fine , i.telefono , c.nome_corso , t.nome_tipologia "
-                "FROM prenotazioni pr JOIN persone pe ON pr.codice_fiscale = pe.codice_fiscale JOIN info_contatti i ON i.codice_fiscale = pr.codice_fiscale "
-                "JOIN fascia_oraria f ON f.id_fascia = pr.id_fascia "
-                "JOIN sale_corsi s ON pr.id_sala = s.id_sala "
-                "JOIN corsi c ON s.id_corso = c.id_corso "
-                "JOIN tipologie_corsi t ON c.id_tipologia = t.id_tipologia "
-                "WHERE pr.eliminata IS NULL ORDER BY pr.data "
-                ) 
-        query_prenotazioni_eliminate = text("SELECT pr.data, pr.codice_fiscale, pr.codice_prenotazione , pr.id_sala, pe.nome , pe.cognome , pe.email , f.inizio, f.fine, i.telefono "
-                "FROM prenotazioni pr JOIN persone pe ON pr.codice_fiscale = pe.codice_fiscale JOIN info_contatti i ON i.codice_fiscale = pr.codice_fiscale "
-                "JOIN fascia_oraria f ON f.id_fascia = pr.id_fascia "
-                "WHERE pr.eliminata IS NOT NULL ORDER BY pr.data "
-                )
-        with engine_capo.connect().execution_options(isolation_level="READ COMMITTED") as conn:
-            tab_lista_prenotazioni_sale_pesi = conn.execute(query_lista_prenotazioni_sale_pesi)
-            tab_lista_prenotazioni_eliminate = conn.execute(query_prenotazioni_eliminate)
-            tab_lista_prenotazioni_sale_corsi = conn.execute(query_lista_prenotazioni_sale_corsi)
-        return render_template("lista_prenotazioni.html", tab_lista_prenotazioni_sale_pesi = tab_lista_prenotazioni_sale_pesi , tab_lista_prenotazioni_eliminate = tab_lista_prenotazioni_eliminate, tab_lista_prenotazioni_sale_corsi = tab_lista_prenotazioni_sale_corsi)
 
-    return render_template("lista_prenotazioni.html")
